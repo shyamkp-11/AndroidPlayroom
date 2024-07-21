@@ -26,26 +26,47 @@ internal interface RetrofitGithubRepoNetworkApi {
     suspend fun getMaxStartsGithubRepo(): Response<NetworkGithubRepoWrapper>
 
     @GET(value = "/repos/{owner}/{repo}")
-    suspend fun getGithubRepo(@Header("Authorization") token: String? = null, @Path("owner") owner: String, @Path("repo") repo: String): Response<NetworkGithubRepoModel>
+    suspend fun getGithubRepo(
+        @Header("Authorization") token: String? = null,
+        @Path("owner") owner: String,
+        @Path("repo") repo: String
+    ): Response<NetworkGithubRepoModel>
+
+    @HTTP(method = "DELETE", path = "/applications/{client_id}/token", hasBody = true)
+    suspend fun deleteAppToken(
+        @Header("Authorization") credentials: String = Credentials.basic(
+            BuildConfig.CLIENT_ID,
+            BuildConfig.CLIENT_SECRET
+        ),
+        @Path("client_id") clientId: String = BuildConfig.CLIENT_ID,
+        @Body requestBody: Map<String, String>
+    ): Response<Unit>
 
     @HTTP(method = "DELETE", path = "/applications/{client_id}/grant", hasBody = true)
-    suspend fun deleteAppAuthorization(@Header("Authorization") credentials: String = Credentials.basic(BuildConfig.CLIENT_ID, BuildConfig.CLIENT_SECRET),
-                                       @Path("client_id") clientId: String = BuildConfig.CLIENT_ID,
-                                       @Body requestBody: Map<String, String>): Response<Unit>
+    suspend fun deleteAppAuthorization(
+        @Header("Authorization") credentials: String = Credentials.basic(
+            BuildConfig.CLIENT_ID,
+            BuildConfig.CLIENT_SECRET
+        ),
+        @Path("client_id") clientId: String = BuildConfig.CLIENT_ID,
+        @Body requestBody: Map<String, String>
+    ): Response<Unit>
 
     @Headers("Accept: application/json")
     @POST
     suspend fun generateUserAccessToken(
         @Url url: String = "https://github.com/login/oauth/access_token",
+        @Query("client_secret") clientSecret: String = BuildConfig.CLIENT_SECRET,
         @Query("code") code: String,
         @Query("client_id") clientId: String = BuildConfig.CLIENT_ID,
-        @Query("client_secret") clientSecret: String = BuildConfig.CLIENT_SECRET
     ): Response<NetworkAccessTokenModel>
 
     @GET(value = "/user")
     suspend fun getAuthenticatedOwner(@Header("Authorization") token: String): Response<NetworkRepoOwner>
+
     @GET(value = "/user/repos")
     suspend fun getMyRepositories(@Header("Authorization") token: String): Response<List<NetworkGithubRepoModel>>
+
     @GET(value = "search/repositories")
     suspend fun searchRepositories(
         @Query("q") queryString: String,
@@ -55,10 +76,18 @@ internal interface RetrofitGithubRepoNetworkApi {
     ): Response<NetworkGithubRepoWrapper>
 
     @PUT(value = "/user/starred/{owner}/{repo}")
-    suspend fun starRepository(@Header("Authorization") token: String, @Path("owner") owner: String, @Path("repo") repo: String): Response<Unit>
+    suspend fun starRepository(
+        @Header("Authorization") token: String,
+        @Path("owner") owner: String,
+        @Path("repo") repo: String
+    ): Response<Unit>
 
     @DELETE(value = "/user/starred/{owner}/{repo}")
-    suspend fun unstarRepository(@Header("Authorization") token: String, @Path("owner") owner: String, @Path("repo") repo: String): Response<Unit>
+    suspend fun unstarRepository(
+        @Header("Authorization") token: String,
+        @Path("owner") owner: String,
+        @Path("repo") repo: String
+    ): Response<Unit>
 
     @GET(value = "/user/starred")
     suspend fun getStarredRepositories(@Header("Authorization") token: String): Response<List<NetworkGithubRepoModel>>
@@ -75,35 +104,49 @@ internal class GithubRepoRetrofitDataSource(
         }.flowOn(ioDispatcher)
     }
 
-    override fun getGithubRepo(token: String?, owner: String ,repo: String): Flow<NetworkGithubRepoModel> {
+    override fun getGithubRepo(
+        token: String?,
+        owner: String,
+        repo: String
+    ): Flow<NetworkGithubRepoModel> {
         return flow {
-            emit(networkApi.getGithubRepo(
-                token = token,
-                owner = owner,
-                repo = repo).body()!!)
+            emit(
+                networkApi.getGithubRepo(
+                    token = token,
+                    owner = owner,
+                    repo = repo
+                ).body()!!
+            )
         }.flowOn(ioDispatcher)
     }
 
     override suspend fun deleteUserAccessToken(token: String): Boolean {
         return withContext(ioDispatcher) {
-            val response = networkApi.deleteAppAuthorization(requestBody = mapOf(Pair("access_token",token)))
+            val response =
+                networkApi.deleteAppAuthorization(requestBody = mapOf(Pair("access_token", token)))
             response.code() == 204
         }
     }
 
     override suspend fun getAuthenticatedOwner(token: String): NetworkRepoOwner {
-        return  withContext(ioDispatcher) {
+        return withContext(ioDispatcher) {
             val response = networkApi.getAuthenticatedOwner(token = "Bearer $token")
             if (response.isSuccessful) {
                 response.body()!!
-            } else throw Exception("Api response code: ${response.code()}. Error body:${response.errorBody()}")
+            } else throw Exception(
+                "Api response code: ${response.code()}. Error body:${
+                    response.errorBody()?.string()
+                }"
+            )
         }
     }
 
     override suspend fun generateUserAccessToken(code: String): String {
         return withContext(ioDispatcher) {
             val result = networkApi.generateUserAccessToken(code = code)
-            if (result.isSuccessful) result.body()!!.accessToken else ""
+            if (result.isSuccessful) result.body()!!.accessToken else throw Exception(
+                "Response code " + result.code() + ". Error:" + result.errorBody()?.string()
+            )
         }
     }
 
@@ -128,14 +171,16 @@ internal class GithubRepoRetrofitDataSource(
 
     override suspend fun starRepository(token: String, owner: String, repo: String): Boolean {
         return withContext(ioDispatcher) {
-            val response = networkApi.starRepository(owner = owner, repo= repo, token = "Bearer $token")
+            val response =
+                networkApi.starRepository(owner = owner, repo = repo, token = "Bearer $token")
             response.code() == 204
         }
     }
 
     override suspend fun unstarRepository(token: String, owner: String, repo: String): Boolean {
         return withContext(ioDispatcher) {
-            val response = networkApi.unstarRepository(owner = owner, repo= repo, token = "Bearer $token")
+            val response =
+                networkApi.unstarRepository(owner = owner, repo = repo, token = "Bearer $token")
             response.code() == 204
         }
     }

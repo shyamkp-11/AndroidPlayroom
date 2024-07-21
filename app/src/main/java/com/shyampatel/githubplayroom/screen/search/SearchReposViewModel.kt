@@ -3,7 +3,6 @@ package com.shyampatel.githubplayroom.screen.search
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.data.GithubRepository
 import kotlinx.coroutines.flow.Flow
@@ -121,6 +120,8 @@ class SearchReposViewModel(
                             }
                             _searchRepoState.value =
                                 SearchReposUiState.Success(searchResultRepos!!)
+                            _searchRepoDataLoadedState.value =
+                                SearchReposDataLoadedState.ShowUndoStarred(starredRepo = repoToStar)
                         }
                     } else {
                         Log.e(
@@ -129,8 +130,6 @@ class SearchReposViewModel(
                         )
                         _searchRepoDataLoadedState.value = SearchReposDataLoadedState.Error
                     }
-                    _searchRepoDataLoadedState.value =
-                        SearchReposDataLoadedState.ShowUndoStarred(starredRepo = repoToStar)
                 }
             }
         }

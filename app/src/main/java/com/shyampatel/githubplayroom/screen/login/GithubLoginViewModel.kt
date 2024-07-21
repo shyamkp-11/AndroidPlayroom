@@ -1,5 +1,6 @@
 package com.shyampatel.githubplayroom.screen.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shyampatel.core.data.GithubRepository
@@ -11,7 +12,11 @@ class GithubLoginViewModel(
 
     fun generateToken(code: String, onComplete: ()-> Unit) {
         viewModelScope.launch {
-            repository.generateAccessToken(code)
+            try {
+                repository.generateAccessToken(code)
+            } catch (e: Exception) {
+                Log.e(GithubLoginViewModel::class.simpleName, e.stackTraceToString())
+            }
             onComplete()
         }
     }

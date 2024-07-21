@@ -9,7 +9,6 @@ import com.shyampatel.database.StarredEntity
 import com.shyampatel.datastore.UserPreferencesDao
 import com.shyampatel.network.GithubRepoRemoteDataSource
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -42,7 +41,7 @@ class GithubRepositoryImpl(
             Result.success(databaseEntities.map {
                 it.asGithubRepoModel()
             })
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(ioDispatcher)
             .catch {
                 emit(Result.failure(it))
             }
@@ -51,36 +50,40 @@ class GithubRepositoryImpl(
     override fun getUserAccessToken(): Flow<Result<String?>> {
         return preferenceDao.getUserAccessToken().map {
             Result.success(it)
-        }
+        }.flowOn(ioDispatcher)
     }
 
     override fun getAuthenticatedOwner(): Flow<Result<RepoOwner?>> {
         return preferenceDao.getAuthenticatedRepoOwner().map {
-                Result.success(it)
-        }
+            Result.success(it)
+        }.flowOn(ioDispatcher)
     }
 
     override suspend fun generateAccessToken(code: String) {
         val token = remoteDataSource.generateUserAccessToken(code)
         preferenceDao.saveUserAccessToken(token)
         val owner = remoteDataSource.getAuthenticatedOwner(token)
-        preferenceDao.saveAuthenticatedOwner(owner.asRepoOwnerEntity().asRepoOwner())
+        withContext(ioDispatcher) {
+            preferenceDao.saveAuthenticatedOwner(owner.asRepoOwnerEntity().asRepoOwner())
+        }
     }
 
     override suspend fun signOut(): Result<Unit> {
-        return withContext(defaultDispatcher) {
+        return withContext(ioDispatcher) {
             val token = preferenceDao.getUserAccessToken().first()
             if (token != null) {
                 try {
                     val isSuccessful = remoteDataSource.deleteUserAccessToken(token)
+                    preferenceDao.clearAccessToken()
+                    preferenceDao.clearAuthenticatedRepoOwner()
+                    githubRepoDataSource.deleteAllRepositories()
+                    repoOwnerDataSource.deleteRepoOwnerData()
+                    starredDataSource.deleteAllStarredData()
                     if (isSuccessful) {
-                        preferenceDao.clearAccessToken()
-                        preferenceDao.clearAuthenticatedRepoOwner()
-                        githubRepoDataSource.deleteAllRepositories()
-                        repoOwnerDataSource.deleteRepoOwnerData()
-                        starredDataSource.deleteAllStarredData()
                         return@withContext Result.success(Unit)
-                    } else return@withContext Result.failure(UnknownError())
+                    } else {
+                        return@withContext Result.failure(UnknownError())
+                    }
                 } catch (e: Exception) {
                     return@withContext Result.failure(e)
                 }
@@ -91,7 +94,8 @@ class GithubRepositoryImpl(
     }
 
     override fun getMyRepositories(): Flow<Result<List<GithubRepoModel>>> {
-        return getUserAccessToken().zip(preferenceDao.getAuthenticatedRepoOwner().map { it?.id }) { token, id ->
+        return getUserAccessToken().zip(
+            preferenceDao.getAuthenticatedRepoOwner().map { it?.id }) { token, id ->
             Pair(token, id)
         }.flatMapLatest { pair ->
             remoteDataSource.getMyRepositories(pair.first.getOrNull()!!).map { networkEntities ->
@@ -117,22 +121,24 @@ class GithubRepositoryImpl(
     }
 
     override fun getStarredRepositories(): Flow<Result<List<GithubRepoModel>>> {
-        return getUserAccessToken().zip(preferenceDao.getAuthenticatedRepoOwner().map { it?.id }) { token, id ->
+        return getUserAccessToken().zip(
+            preferenceDao.getAuthenticatedRepoOwner().map { it?.id }) { token, id ->
             Pair(token, id)
         }.flatMapLatest { pair ->
-            remoteDataSource.getMyStarredRepositories(pair.first.getOrNull()!!).map { networkEntities ->
-                githubRepoDataSource.upsertGithubRepoEntities(networkEntities.map {
-                    it.asGithubRepoEntity()
-                })
-                repoOwnerDataSource.upsertRepoOwnerEntities(networkEntities.map {
-                    it.asRepoOwnerEntity()
-                })
-                starredDataSource.deleteStarredForUser(pair.second!!)
-                starredDataSource.upsertStarredEntities(networkEntities.map {
-                    StarredEntity(userId = pair.second!!, repoId = it.id)
-                })
-                pair.second!!
-            }
+            remoteDataSource.getMyStarredRepositories(pair.first.getOrNull()!!)
+                .map { networkEntities ->
+                    githubRepoDataSource.upsertGithubRepoEntities(networkEntities.map {
+                        it.asGithubRepoEntity()
+                    })
+                    repoOwnerDataSource.upsertRepoOwnerEntities(networkEntities.map {
+                        it.asRepoOwnerEntity()
+                    })
+                    starredDataSource.deleteStarredForUser(pair.second!!)
+                    starredDataSource.upsertStarredEntities(networkEntities.map {
+                        StarredEntity(userId = pair.second!!, repoId = it.id)
+                    })
+                    pair.second!!
+                }
         }.flatMapLatest { userId ->
             githubRepoDataSource.getStarredGithubRepoEntitiesForUser(userId)
         }.map { databaseEntities ->
@@ -145,22 +151,24 @@ class GithubRepositoryImpl(
     }
 
     override fun getStarredRepositoriesLiveFlow(): Flow<Result<List<Long>>> {
-        return getUserAccessToken().zip(preferenceDao.getAuthenticatedRepoOwner().map { it?.id }) { token, id ->
+        return getUserAccessToken().zip(
+            preferenceDao.getAuthenticatedRepoOwner().map { it?.id }) { token, id ->
             Pair(token, id)
         }.flatMapLatest { pair ->
-            remoteDataSource.getMyStarredRepositories(pair.first.getOrNull()!!).map { networkEntities ->
-                githubRepoDataSource.upsertGithubRepoEntities(networkEntities.map {
-                    it.asGithubRepoEntity()
-                })
-                repoOwnerDataSource.upsertRepoOwnerEntities(networkEntities.map {
-                    it.asRepoOwnerEntity()
-                })
-                starredDataSource.deleteStarredForUser(pair.second!!)
-                starredDataSource.upsertStarredEntities(networkEntities.map {
-                    StarredEntity(userId = pair.second!!, repoId = it.id)
-                })
-                pair.second!!
-            }
+            remoteDataSource.getMyStarredRepositories(pair.first.getOrNull()!!)
+                .map { networkEntities ->
+                    githubRepoDataSource.upsertGithubRepoEntities(networkEntities.map {
+                        it.asGithubRepoEntity()
+                    })
+                    repoOwnerDataSource.upsertRepoOwnerEntities(networkEntities.map {
+                        it.asRepoOwnerEntity()
+                    })
+                    starredDataSource.deleteStarredForUser(pair.second!!)
+                    starredDataSource.upsertStarredEntities(networkEntities.map {
+                        StarredEntity(userId = pair.second!!, repoId = it.id)
+                    })
+                    pair.second!!
+                }
         }.flatMapLatest { userId ->
             starredDataSource.getStarredEntitiesForUsers(listOf(userId))
         }.map { databaseEntities ->

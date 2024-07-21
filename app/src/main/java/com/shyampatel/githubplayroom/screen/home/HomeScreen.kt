@@ -1,5 +1,6 @@
 package com.shyampatel.githubplayroom.screen.home
 
+import android.webkit.CookieManager
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -29,7 +30,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,7 +45,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,6 +60,8 @@ import com.shyampatel.githubplayroom.theme.HomeIconTintColor
 import com.shyampatel.githubplayroom.theme.SigninColor
 import com.shyampatel.githubplayroom.theme.SignoutColor
 import com.shyampatel.githubplayroom.theme.StarColor
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -93,7 +94,7 @@ fun HomeScreen(
     onLoginClicked: () -> Unit,
     homeScreenState: HomeViewModel.HomeState,
     onStarredRepositoriesClicked: () -> Unit,
-    onSignoutClicked: () -> Unit,
+    onSignoutClicked: (deleteCookieData: suspend () -> Unit) -> Unit,
     onMyRepositoriesClicked: () -> Unit,
 ) {
     Scaffold(
@@ -195,7 +196,12 @@ fun HomeScreen(
                                 iconBackgroundColor = SignoutColor,
                                 iconTint = Color.White
                             ) {
-                                onSignoutClicked()
+                                onSignoutClicked {
+                                    withContext(Dispatchers.Default) {
+                                        CookieManager.getInstance().removeAllCookies(null);
+                                        CookieManager.getInstance().flush();
+                                    }
+                                }
                             }
                         }
                     }

@@ -54,7 +54,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwnerType
 import com.shyampatel.githubplayroom.GithubPlayroomLoadingIndicator
-import com.shyampatel.githubplayroom.GithubPlayroomTopAppBar
 import com.shyampatel.githubplayroom.GithubRepoListItem
 import com.shyampatel.githubplayroom.R
 import com.shyampatel.githubplayroom.theme.GithubPlayroomTheme

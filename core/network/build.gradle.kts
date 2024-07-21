@@ -21,6 +21,11 @@ android {
             "CLIENT_SECRET",
             "\"${project.findProperty("CLIENT_SECRET")}\""
         )
+        buildConfigField(
+            "String",
+            "APP_NAME",
+            "\"${project.findProperty("APP_NAME")}\""
+        )
     }
 
     buildTypes {

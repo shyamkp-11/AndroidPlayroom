@@ -23,9 +23,8 @@ class HomeViewModel(
     )
 
     private fun isUserAuthenticated(): Flow<HomeState> {
-        return repository.getUserAccessToken().zip(repository.getAuthenticatedOwner()){
-            token, owner -> Pair(token, owner)
-        }.map {
+        return repository.getUserAccessToken()
+            .zip(repository.getAuthenticatedOwner()) { token, owner -> Pair(token, owner) }.map {
             val token = it.first.getOrNull()
             val authenticatedOwner = it.second.getOrNull()
             if (token.isNullOrEmpty() || authenticatedOwner == null) {
@@ -36,15 +35,16 @@ class HomeViewModel(
         }
     }
 
-    fun signOut() {
+    fun signOut(deleteCookieData: suspend ()-> Unit) {
         viewModelScope.launch {
-           repository.signOut()
+            repository.signOut()
+            deleteCookieData()
         }
     }
 
     sealed interface HomeState {
         data class LoggedIn(val authenticatedOwner: RepoOwner) : HomeState
-        data object LoggedOut: HomeState
+        data object LoggedOut : HomeState
         data object Error : HomeState
         data object Loading : HomeState
     }
