@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.data.GithubRepository
+import com.shyampatel.githubplayroom.ErrorMessage
+import com.shyampatel.githubplayroom.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,32 +14,32 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class SearchReposViewModel(
     private val repository: GithubRepository
 ) : ViewModel() {
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
-
-    private val _searchRepoState: MutableStateFlow<SearchReposUiState> by lazy {
-        MutableStateFlow(
-            SearchReposUiState.EmptyQuery
+    private val viewModelState = MutableStateFlow(
+        SearchViewModelState(
+            isLoading = false,
+            errorMessages = emptyList(),
+            searchInput = "",
+            searchResults = null,
+            showUndoStarred = null,
+            starredRepo = emptyList()
         )
-    }
-    val searchRepoState: StateFlow<SearchReposUiState> = _searchRepoState
+    )
 
-    private val _searchRepoDataLoadedState: MutableStateFlow<SearchReposDataLoadedState> by lazy {
-        MutableStateFlow(
-            SearchReposDataLoadedState.Init
+    val uiState = viewModelState
+        .map(SearchViewModelState::toUiState)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            viewModelState.value.toUiState()
         )
-    }
-    val searchRepoDataLoadedState: StateFlow<SearchReposDataLoadedState> =
-        _searchRepoDataLoadedState
-
-    private val _myStarredRepo: MutableStateFlow<List<Long>> = MutableStateFlow(emptyList())
-    val myStarredRepo: StateFlow<List<Long>> = _myStarredRepo
 
     private val authenticatedUserToken: StateFlow<String?> = getAuthenticatedUserToken().stateIn(
         viewModelScope,
@@ -60,46 +62,60 @@ class SearchReposViewModel(
                                 result.exceptionOrNull()?.stackTraceToString() ?: ""
                             )
                         }
-                    }.collect{ starredRepo ->
-                        _myStarredRepo.value = starredRepo
+                    }.collect { starredRepo ->
+                        viewModelState.update {
+                            it.copy(starredRepo = starredRepo)
+                        }
                     }
                 }
             }
         }
     }
-
-    private var lastQuery: String = ""
-    private var searchResultRepos: List<GithubRepoModel>? = null
-
-    private fun getAuthenticatedUserToken(): Flow<String?> = repository.getUserAccessToken().map { it.getOrNull() }
+    private fun getAuthenticatedUserToken(): Flow<String?> =
+        repository.getUserAccessToken().map { it.getOrNull() }
 
     private fun getSearchResults(query: String) {
-        _searchRepoState.value = SearchReposUiState.Loading
+        viewModelState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
-            repository.searchRepositories(query).map {
-                if (it.isSuccess) {
-                    searchResultRepos = it.getOrNull()
-                    SearchReposUiState.Success(searchResultRepos!!)
+            repository.searchRepositories(query).map { result ->
+                if (result.isSuccess) {
+                    viewModelState.value.copy(
+                        searchResults = result.getOrNull(),
+                        isLoading = false,
+                    )
+
                 } else {
                     Log.e(
                         SearchReposViewModel::class.simpleName,
-                        it.exceptionOrNull()?.stackTraceToString() ?: ""
+                        result.exceptionOrNull()?.stackTraceToString() ?: ""
                     )
-                    SearchReposUiState.Error
+                    viewModelState.value.copy(
+                        errorMessages = listOf(
+                            ErrorMessage(
+                                UUID.randomUUID().mostSignificantBits,
+                                R.string.load_error
+                            )
+                        ),
+                        isLoading = false,
+                    )
                 }
-            }.collect {
-                _searchRepoState.value = it
+            }.collect { state ->
+                viewModelState.update { state }
             }
         }
     }
 
     fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
+        viewModelState.update {
+            it.copy(searchInput = query)
+        }
     }
 
     fun onSearchTriggered(query: String) {
         if (query.length > SEARCH_QUERY_MIN_LENGTH) {
-            lastQuery = query
+            viewModelState.update {
+                it.copy(searchInput = query)
+            }
             getSearchResults(query)
         }
     }
@@ -108,27 +124,39 @@ class SearchReposViewModel(
         viewModelScope.launch {
             authenticatedUserToken.collect { token ->
                 if (!token.isNullOrEmpty()) {
-                    _searchRepoDataLoadedState.value = SearchReposDataLoadedState.Loading
+                    viewModelState.update { it.copy(isLoading = true) }
                     val isSuccess = repository.starRepository(token, repoToStar)
                     if (isSuccess.isSuccess) {
                         repository.getRepo(
                             owner = repoToStar.ownerLogin,
                             repo = repoToStar.name
                         ).first().getOrNull()?.let { updatedRepo ->
-                            searchResultRepos = searchResultRepos!!.map {
-                                if (it.name == repoToStar.name) updatedRepo else it
+                            viewModelState.update {
+                                it.copy(
+                                    searchResults = it.searchResults?.map { githubRepo ->
+                                        if (githubRepo.name == repoToStar.name) updatedRepo else githubRepo
+                                    },
+                                    showUndoStarred = repoToStar,
+                                    isLoading = false,
+                                )
                             }
-                            _searchRepoState.value =
-                                SearchReposUiState.Success(searchResultRepos!!)
-                            _searchRepoDataLoadedState.value =
-                                SearchReposDataLoadedState.ShowUndoStarred(starredRepo = repoToStar)
                         }
                     } else {
                         Log.e(
                             SearchReposViewModel::class.simpleName,
                             isSuccess.exceptionOrNull()?.stackTraceToString() ?: ""
                         )
-                        _searchRepoDataLoadedState.value = SearchReposDataLoadedState.Error
+                        viewModelState.update {
+                            it.copy(
+                                errorMessages = listOf(
+                                    ErrorMessage(
+                                        UUID.randomUUID().mostSignificantBits,
+                                        R.string.load_error
+                                    )
+                                ),
+                                isLoading = false,
+                            )
+                        }
                     }
                 }
             }
@@ -139,54 +167,98 @@ class SearchReposViewModel(
         viewModelScope.launch {
             authenticatedUserToken.collect { token ->
                 if (!token.isNullOrEmpty()) {
-                    _searchRepoDataLoadedState.value = SearchReposDataLoadedState.Loading
+                    viewModelState.update { it.copy(isLoading = true) }
                     val isSuccess = repository.unstarRepository(token, repoToUnstar)
                     if (isSuccess.isSuccess) {
                         repository.getRepo(
                             owner = repoToUnstar.ownerLogin,
                             repo = repoToUnstar.name
                         ).first().getOrNull()?.let { updatedRepo ->
-                            searchResultRepos = searchResultRepos!!.map {
-                                if (it.name == repoToUnstar.name) updatedRepo else it
+                            viewModelState.update {
+                                it.copy(
+                                    searchResults = it.searchResults?.map { githubRepo ->
+                                        if (githubRepo.name == repoToUnstar.name) updatedRepo else githubRepo
+                                    },
+                                    showUndoStarred = null,
+                                    isLoading = false,
+                                )
                             }
-                            _searchRepoState.value =
-                                SearchReposUiState.Success(searchResultRepos!!)
                         }
-                        _searchRepoDataLoadedState.value = SearchReposDataLoadedState.LoadingFinish
                     } else {
                         Log.e(
                             SearchReposViewModel::class.simpleName,
                             isSuccess.exceptionOrNull()?.stackTraceToString() ?: ""
                         )
-                        _searchRepoDataLoadedState.value = SearchReposDataLoadedState.Error
+                        viewModelState.update {
+                            it.copy(
+                                errorMessages = listOf(
+                                    ErrorMessage(
+                                        UUID.randomUUID().mostSignificantBits,
+                                        R.string.load_error
+                                    ),
+                                ),
+                                isLoading = false,
+                            )
+                        }
                     }
-
                 }
             }
         }
     }
 
     fun snackbarDismissed() {
-        _searchRepoDataLoadedState.value =
-            SearchReposDataLoadedState.UndoStarFinished
+        viewModelState.update {
+            it.copy(showUndoStarred = null)
+        }
     }
 }
 
-sealed interface SearchReposUiState {
-    open class Success(open val list: List<GithubRepoModel>) : SearchReposUiState
-    data object Error : SearchReposUiState
-    data object Loading : SearchReposUiState
-    data object EmptyQuery : SearchReposUiState
+sealed interface SearchReposState {
+    val isLoading: Boolean
+    val errorMessages: List<ErrorMessage>
+    val searchInput: String
+
+    data class NoSearchResults(
+        override val isLoading: Boolean,
+        override val errorMessages: List<ErrorMessage>,
+        override val searchInput: String
+    ) : SearchReposState
+
+    data class HasSearchResults(
+        val searchResults: List<GithubRepoModel>,
+        val showUndoStarred: GithubRepoModel?,
+        override val isLoading: Boolean,
+        override val errorMessages: List<ErrorMessage>,
+        override val searchInput: String,
+        val starredRepos: List<Long>,
+    ) : SearchReposState
 }
 
-sealed interface SearchReposDataLoadedState {
-    data object Init : SearchReposDataLoadedState
-    data object Loading : SearchReposDataLoadedState
-    data object LoadingFinish : SearchReposDataLoadedState
-    data class ShowUndoStarred(val starredRepo: GithubRepoModel) : SearchReposDataLoadedState
-    data object UndoStarFinished : SearchReposDataLoadedState
-    data object EmptyQuery : SearchReposDataLoadedState
-    data object Error : SearchReposDataLoadedState
+private data class SearchViewModelState(
+    val searchResults: List<GithubRepoModel>? = null,
+    val isLoading: Boolean = false,
+    val errorMessages: List<ErrorMessage> = emptyList(),
+    val searchInput: String = "",
+    val showUndoStarred: GithubRepoModel?,
+    val starredRepo: List<Long> = emptyList(),
+) {
+    fun toUiState(): SearchReposState =
+        if (searchResults == null) {
+            SearchReposState.NoSearchResults(
+                isLoading = isLoading,
+                searchInput = searchInput,
+                errorMessages = errorMessages
+            )
+        } else {
+            SearchReposState.HasSearchResults(
+                searchResults = searchResults,
+                errorMessages = errorMessages,
+                isLoading = isLoading,
+                searchInput = searchInput,
+                showUndoStarred = showUndoStarred,
+                starredRepos = starredRepo
+            )
+        }
 }
 
 private const val SEARCH_QUERY_MIN_LENGTH = 2

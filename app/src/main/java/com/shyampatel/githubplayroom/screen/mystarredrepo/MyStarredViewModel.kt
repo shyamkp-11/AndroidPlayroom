@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class MyStarredViewModel(
@@ -57,7 +58,7 @@ class MyStarredViewModel(
         viewModelScope.launch {
             authenticatedUserToken.collect { token ->
                 if (!token.isNullOrEmpty()) {
-                    _starLoadedState.value = StarDataLoadedState.Loading
+                    _starLoadedState.update { StarDataLoadedState.Loading }
                     val isSuccess = repository.starRepository(token, repoToStar)
                     if (isSuccess.isSuccess) {
                         repository.getRepo(
@@ -65,13 +66,13 @@ class MyStarredViewModel(
                             repo = repoToStar.name
                         ).first().getOrNull()?.let { _ ->
                         }
-                        _starLoadedState.value = StarDataLoadedState.LoadingFinish
+                        _starLoadedState.update { StarDataLoadedState.LoadingFinish }
                     } else {
                         Log.e(
                             SearchReposViewModel::class.simpleName,
                             isSuccess.exceptionOrNull()?.stackTraceToString() ?: ""
                         )
-                        _starLoadedState.value = StarDataLoadedState.Error
+                        _starLoadedState.update { StarDataLoadedState.Error }
                     }
                 }
             }
@@ -93,7 +94,7 @@ class MyStarredViewModel(
                             SearchReposViewModel::class.simpleName,
                             isSuccess.exceptionOrNull()?.stackTraceToString() ?: ""
                         )
-                        _starLoadedState.value = StarDataLoadedState.Error
+                        _starLoadedState.update { StarDataLoadedState.Error }
                     }
                     // state will updated from the flow in init
                 }
@@ -102,8 +103,7 @@ class MyStarredViewModel(
     }
 
     fun snackbarDismissed() {
-        _starLoadedState.value =
-            StarDataLoadedState.UndoUnStarFinished
+        _starLoadedState.update { StarDataLoadedState.UndoUnStarFinished }
     }
 }
 

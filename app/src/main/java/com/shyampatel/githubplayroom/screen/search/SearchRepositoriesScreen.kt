@@ -31,11 +31,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -66,16 +63,10 @@ internal fun SearchRepositoriesRoute(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     searchReposViewModel: SearchReposViewModel = koinViewModel(),
 ) {
-    val searchReposUiState: SearchReposUiState by searchReposViewModel.searchRepoState.collectAsStateWithLifecycle()
-    val searchReposDataLoadedState: SearchReposDataLoadedState by searchReposViewModel.searchRepoDataLoadedState.collectAsStateWithLifecycle()
-    val starredRepoList by searchReposViewModel.myStarredRepo.collectAsStateWithLifecycle()
-    val searchQuery by searchReposViewModel.searchQuery.collectAsStateWithLifecycle()
+    val searchReposState: SearchReposState by searchReposViewModel.uiState.collectAsStateWithLifecycle()
     SearchRepositoriesScreen(
         modifier = modifier,
-        searchReposUiState = searchReposUiState,
-        searchReposDataLoadedState = searchReposDataLoadedState,
-        starredRepoList = starredRepoList,
-        searchQuery = searchQuery,
+        searchReposState = searchReposState,
         onSearchQueryChanged = searchReposViewModel::onSearchQueryChanged,
         onBackClick = onBackClick,
         onSearchTriggered = searchReposViewModel::onSearchTriggered,
@@ -90,10 +81,7 @@ internal fun SearchRepositoriesRoute(
 @Composable
 fun SearchRepositoriesScreen(
     modifier: Modifier = Modifier,
-    searchQuery: String = "",
-    searchReposUiState: SearchReposUiState,
-    searchReposDataLoadedState: SearchReposDataLoadedState,
-    starredRepoList: List<Long>,
+    searchReposState: SearchReposState,
     onStarRepo: (GithubRepoModel) -> Unit,
     onSearchQueryChanged: (String) -> Unit = {},
     onSearchTriggered: (String) -> Unit = {},
@@ -111,55 +99,54 @@ fun SearchRepositoriesScreen(
         modifier = modifier,
     ) { innerPadding ->
 
-        LaunchedEffect(searchReposDataLoadedState) {
-            if (searchReposDataLoadedState is SearchReposDataLoadedState.ShowUndoStarred) {
-                val snackBarResult = snackbarHostState.showSnackbar(
-                    message = snackbarMessage,
-                    actionLabel = undoMessage,
-                    duration = SnackbarDuration.Short,
-                ) == SnackbarResult.ActionPerformed
-                if (snackBarResult) {
-                    onUndoStarRepo(searchReposDataLoadedState.starredRepo)
-                } else {
-                    snackBackDismissed()
+        if (searchReposState is SearchReposState.HasSearchResults) {
+            LaunchedEffect(searchReposState.showUndoStarred) {
+                if (searchReposState.showUndoStarred != null) {
+                    val snackBarResult = snackbarHostState.showSnackbar(
+                        message = snackbarMessage,
+                        actionLabel = undoMessage,
+                        duration = SnackbarDuration.Short,
+                    ) == SnackbarResult.ActionPerformed
+                    if (snackBarResult) {
+                        onUndoStarRepo(searchReposState.showUndoStarred)
+                    } else {
+                        snackBackDismissed()
+                    }
                 }
             }
         }
-        var githubRepoModels: List<GithubRepoModel>? by rememberSaveable { mutableStateOf(null) }
         Box(modifier = modifier.padding(top = innerPadding.calculateTopPadding())) {
             Column(modifier = Modifier.fillMaxSize()) {
                 SearchToolbar(
                     onBackClick = onBackClick,
                     onSearchQueryChanged = onSearchQueryChanged,
                     onSearchTriggered = onSearchTriggered,
-                    searchQuery = searchQuery,
+                    searchQuery = searchReposState.searchInput,
                 )
-                when (searchReposUiState) {
-                    is SearchReposUiState.Success -> {
-                        githubRepoModels = searchReposUiState.list
-                    }
-
-                    SearchReposUiState.Error -> {}
-                    SearchReposUiState.Loading -> {}
-                    SearchReposUiState.EmptyQuery -> {}
-                }
-                githubRepoModels?.let {
-                    LazyColumn(modifier = Modifier, contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())) {
-                        items(
-                            items = it,
-                            key = { githubRepoModel -> githubRepoModel.id }
-                        ) { repo ->
-                            GithubRepoListItem(
-                                repo = repo,
-                                onStarClick = { onStarRepo(repo) },
-                                isRepoStarred = starredRepoList.contains(repo.id),
-                                uriHandler = LocalUriHandler.current
-                            )
+                when (searchReposState) {
+                    is SearchReposState.HasSearchResults -> {
+                        searchReposState.searchResults.let {
+                            LazyColumn(modifier = Modifier, contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())) {
+                                items(
+                                    items = it,
+                                    key = { githubRepoModel -> githubRepoModel.id }
+                                ) { repo ->
+                                    GithubRepoListItem(
+                                        repo = repo,
+                                        onStarClick = { onStarRepo(repo) },
+                                        isRepoStarred = searchReposState.starredRepos.contains(repo.id),
+                                        uriHandler = LocalUriHandler.current
+                                    )
+                                }
+                            }
                         }
+                    }
+                    is SearchReposState.NoSearchResults -> {
+
                     }
                 }
             }
-            if (searchReposUiState is SearchReposUiState.Loading || searchReposDataLoadedState is SearchReposDataLoadedState.Loading) {
+            if (searchReposState.isLoading) {
                 GithubPlayroomLoadingIndicator(modifier = modifier)
             }
         }
@@ -279,9 +266,15 @@ private fun SearchTextField(
 fun SearchRepositoriesScreenPreview() {
     GithubPlayroomTheme {
         SearchRepositoriesScreen(
-            searchQuery = "",
-            searchReposUiState = SearchReposUiState.Success(
-                listOf(
+            onStarRepo = {},
+            onSearchQueryChanged = {},
+            onSearchTriggered = {},
+            onBackClick = {},
+            onUndoStarRepo = {},
+            snackBackDismissed = {},
+            snackbarHostState = remember {SnackbarHostState()},
+            searchReposState = SearchReposState.HasSearchResults (
+                searchResults = listOf(
                     GithubRepoModel(
                         1,
                         name = "name 1",
@@ -310,17 +303,13 @@ fun SearchRepositoriesScreenPreview() {
                         description = "description 2",
                         language = "language 2",
                     ),
-                )
-            ),
-            searchReposDataLoadedState = SearchReposDataLoadedState.Init,
-            onStarRepo = {},
-            onSearchQueryChanged = {},
-            onSearchTriggered = {},
-            onBackClick = {},
-            onUndoStarRepo = {},
-            snackBackDismissed = {},
-            starredRepoList =  emptyList<Long>() ,
-            snackbarHostState = remember {SnackbarHostState()}
+                ),
+                showUndoStarred = null,
+                isLoading = false,
+                errorMessages = emptyList(),
+                starredRepos = emptyList(),
+                searchInput = "",
+            )
         )
     }
 }

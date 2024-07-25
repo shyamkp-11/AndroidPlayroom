@@ -13,4 +13,5 @@
     <string name="repository_unstarred">Repository is unstarred</string>
     <string name="public_repo">Public</string>
     <string name="private_repo">Private</string>
+    <string name="load_error">loading error</string>
 </resources>
