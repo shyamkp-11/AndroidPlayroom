@@ -30,6 +30,7 @@ datastorePreferencesCoreJvm = "1.1.1"
 junitJunit = "4.13.2"
 androidxJunit = "1.2.1"
 espressoCoreVersion = "3.6.1"
+lifecycleRuntimeKtx = "2.8.6"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
@@ -69,6 +70,8 @@ room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", vers
 junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCoreVersion" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

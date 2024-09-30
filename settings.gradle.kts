@@ -14,7 +14,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "GithubPlayroom"
+rootProject.name = "AndroidPlayroom"
 // enables typesafe importing of module dependency inside project
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include (":app")
@@ -24,3 +24,4 @@ include (":core:network")
 include (":core:database")
 include(":core:datastore")
 include(":core:ui")
+include(":geofenceplayroom")
