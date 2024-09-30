@@ -55,11 +55,11 @@ import com.shyampatel.core.common.RepoOwner
 import com.shyampatel.core.common.RepoOwnerType
 import com.shyampatel.githubplayroom.GithubPlayroomTopAppBar
 import com.shyampatel.githubplayroom.R
-import com.shyampatel.githubplayroom.theme.GithubPlayroomTheme
-import com.shyampatel.githubplayroom.theme.HomeIconTintColor
-import com.shyampatel.githubplayroom.theme.SigninColor
-import com.shyampatel.githubplayroom.theme.SignoutColor
-import com.shyampatel.githubplayroom.theme.StarColor
+import com.shyampatel.ui.theme.AndroidPlayroomTheme
+import com.shyampatel.ui.theme.HomeIconTintColor
+import com.shyampatel.ui.theme.SigninColor
+import com.shyampatel.ui.theme.SignoutColor
+import com.shyampatel.ui.theme.StarColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
@@ -349,7 +349,7 @@ fun OwnerProfileImage(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    GithubPlayroomTheme {
+    AndroidPlayroomTheme {
         HomeScreen(
             onSearchClicked = {},
             onLoginClicked = {},
@@ -364,7 +364,7 @@ fun HomeScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreviewLoggedIn() {
-    GithubPlayroomTheme {
+    AndroidPlayroomTheme {
         HomeScreen(
             onSearchClicked = {},
             onLoginClicked = {},

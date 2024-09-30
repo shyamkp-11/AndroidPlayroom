@@ -1,4 +1,4 @@
-package com.shyampatel.githubplayroom.theme
+package com.shyampatel.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

@@ -50,6 +50,7 @@ dependencies {
 
     implementation(projects.core.common)
     implementation(projects.core.data)
+    implementation(projects.core.ui)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
     implementation (libs.androidx.core.ktx)
@@ -62,4 +63,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.coil.kt)
     implementation(libs.coil.kt.compose)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }

@@ -1,4 +1,4 @@
-package com.shyampatel.githubplayroom.theme
+package com.shyampatel.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -71,7 +71,7 @@ val DarkColors = darkColorScheme(
 )
 
 @Composable
-fun GithubPlayroomTheme(
+fun AndroidPlayroomTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     isDynamicColor: Boolean = true,

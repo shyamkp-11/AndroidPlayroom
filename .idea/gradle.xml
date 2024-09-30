@@ -30,6 +30,7 @@
             <option value="$PROJECT_DIR$/core/database" />
             <option value="$PROJECT_DIR$/core/datastore" />
             <option value="$PROJECT_DIR$/core/network" />
+            <option value="$PROJECT_DIR$/core/ui" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

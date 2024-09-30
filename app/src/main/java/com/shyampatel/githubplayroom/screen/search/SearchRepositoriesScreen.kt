@@ -50,10 +50,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwnerType
-import com.shyampatel.githubplayroom.GithubPlayroomLoadingIndicator
+import com.shyampatel.ui.AndroidPlayroomLoadingIndicator
 import com.shyampatel.githubplayroom.GithubRepoListItem
 import com.shyampatel.githubplayroom.R
-import com.shyampatel.githubplayroom.theme.GithubPlayroomTheme
+import com.shyampatel.ui.theme.AndroidPlayroomTheme
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -147,7 +147,7 @@ fun SearchRepositoriesScreen(
                 }
             }
             if (searchReposState.isLoading) {
-                GithubPlayroomLoadingIndicator(modifier = modifier)
+                AndroidPlayroomLoadingIndicator(modifier = modifier)
             }
         }
     }
@@ -264,7 +264,7 @@ private fun SearchTextField(
 @Preview(showBackground = true)
 @Composable
 fun SearchRepositoriesScreenPreview() {
-    GithubPlayroomTheme {
+    AndroidPlayroomTheme {
         SearchRepositoriesScreen(
             onStarRepo = {},
             onSearchQueryChanged = {},

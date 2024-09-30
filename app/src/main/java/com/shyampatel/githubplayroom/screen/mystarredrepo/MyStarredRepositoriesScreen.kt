@@ -24,7 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwnerType
-import com.shyampatel.githubplayroom.GithubPlayroomLoadingIndicator
+import com.shyampatel.ui.AndroidPlayroomLoadingIndicator
 import com.shyampatel.githubplayroom.GithubPlayroomTopAppBar
 import com.shyampatel.githubplayroom.GithubRepoListItem
 import com.shyampatel.githubplayroom.R
@@ -113,7 +113,7 @@ fun MyStarredScreen(
             MyStarredState.Loading -> {}
         }
         if (myStarredState is MyStarredState.Loading || starDataLoadedState is StarDataLoadedState.Loading) {
-            GithubPlayroomLoadingIndicator(modifier = contentModifier.padding(innerPadding))
+            AndroidPlayroomLoadingIndicator(modifier = contentModifier.padding(innerPadding))
         }
     }
 }

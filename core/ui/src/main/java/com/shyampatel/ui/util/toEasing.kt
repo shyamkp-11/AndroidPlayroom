@@ -1,4 +1,4 @@
-package com.shyampatel.githubplayroom.util
+package com.shyampatel.ui.util
 
 import android.animation.TimeInterpolator
 import androidx.compose.animation.core.Easing

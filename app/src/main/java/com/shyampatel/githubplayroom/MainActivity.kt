@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.shyampatel.githubplayroom.navigation.GithubPlayroomNavHost
-import com.shyampatel.githubplayroom.theme.GithubPlayroomTheme
+import com.shyampatel.ui.theme.AndroidPlayroomTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
         setContent {
             val appState = rememberGithubPlayroomAppState()
-            GithubPlayroomTheme {
+            AndroidPlayroomTheme {
                 GithubPlayroomApp(appState, modifier = Modifier)
             }
         }

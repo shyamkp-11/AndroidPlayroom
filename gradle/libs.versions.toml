@@ -27,6 +27,9 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 material = "1.12.0"
 datastorePreferencesCoreJvm = "1.1.1"
+junitJunit = "4.13.2"
+androidxJunit = "1.2.1"
+espressoCoreVersion = "3.6.1"
 
 [libraries]
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
@@ -63,6 +66,9 @@ android-tools-common = { group = "com.android.tools", name = "common", version.r
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
+junit = { group = "junit", name = "junit", version.ref = "junitJunit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCoreVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
@@ -77,7 +83,7 @@ room = { id = "androidx.room", version.ref = "room" }
 shyampatel-android-application = { id = "shyampatel.android.application", version = "unspecified" }
 shyampatel-android-application-compose = { id = "shyampatel.android.application.compose", version = "unspecified" }
 shyampatel-android-library = { id = "shyampatel.android.library", version = "unspecified" }
-nowinandroid-android-library-compose = { id = "shyampatel.android.library.compose", version = "unspecified" }
+shyampatel-android-library-compose = { id = "shyampatel.android.library.compose", version = "unspecified" }
 shyampatel-android-room = { id = "shyampatel.android.room", version = "unspecified" }
 shyampatel-jvm-library = { id = "shyampatel.jvm.library", version = "unspecified" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinVersion" }

@@ -53,8 +53,8 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwnerType
-import com.shyampatel.githubplayroom.theme.GithubPlayroomTheme
-import com.shyampatel.githubplayroom.theme.StarColor
+import com.shyampatel.ui.theme.AndroidPlayroomTheme
+import com.shyampatel.ui.theme.StarColor
 
 @Composable
 fun GithubRepoListItem(
@@ -291,7 +291,7 @@ fun RepoOwnerImage(
 @Preview(showBackground = true)
 @Composable
 private fun GithubRepoListItemPrev() {
-    GithubPlayroomTheme {
+    AndroidPlayroomTheme {
         var isStarred: Boolean by remember { mutableStateOf(true) }
         GithubRepoListItem(
             repo = GithubRepoModel(
