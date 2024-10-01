@@ -17,7 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwnerType
 import com.shyampatel.ui.AndroidPlayroomLoadingIndicator
-import com.shyampatel.githubplayroom.GithubPlayroomTopAppBar
+import com.shyampatel.ui.AndroidPlayroomTopAppBar
 import com.shyampatel.githubplayroom.GithubRepoListItem
 import com.shyampatel.githubplayroom.R
 import org.koin.androidx.compose.koinViewModel
@@ -41,7 +41,7 @@ fun MyRepositoriesScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarState)
     Scaffold(
         topBar = {
-            GithubPlayroomTopAppBar(
+            AndroidPlayroomTopAppBar(
                 titleRes = R.string.my_repositories,
                 topAppBarState = topAppBarState
             )

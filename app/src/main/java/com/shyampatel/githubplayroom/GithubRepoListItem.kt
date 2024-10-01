@@ -281,7 +281,7 @@ fun RepoOwnerImage(
             painter = if (isError.not() && !isLocalInspection) {
                 imageLoader
             } else {
-                painterResource(R.drawable.user)
+                painterResource(com.shyampatel.ui.R.drawable.user)
             },
             contentDescription = null,
         )

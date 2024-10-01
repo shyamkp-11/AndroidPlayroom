@@ -25,7 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwnerType
 import com.shyampatel.ui.AndroidPlayroomLoadingIndicator
-import com.shyampatel.githubplayroom.GithubPlayroomTopAppBar
+import com.shyampatel.ui.AndroidPlayroomTopAppBar
 import com.shyampatel.githubplayroom.GithubRepoListItem
 import com.shyampatel.githubplayroom.R
 import org.koin.androidx.compose.koinViewModel
@@ -82,7 +82,7 @@ fun MyStarredScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         modifier = modifier,
         topBar = {
-            GithubPlayroomTopAppBar(
+            AndroidPlayroomTopAppBar(
                 titleRes = R.string.starred_repositories,
                 scrollBehavior = scrollBehavior
             )

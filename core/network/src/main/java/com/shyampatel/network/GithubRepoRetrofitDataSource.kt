@@ -143,7 +143,12 @@ internal class GithubRepoRetrofitDataSource(
 
     override suspend fun generateUserAccessToken(code: String): String {
         return withContext(ioDispatcher) {
-            val result = networkApi.generateUserAccessToken(code = code)
+            val clientId = BuildConfig.CLIENT_ID
+            val clientSecret = BuildConfig.CLIENT_SECRET
+            val result = networkApi.generateUserAccessToken(
+                clientId = clientId,
+                code = code,
+                clientSecret = clientSecret)
             if (result.isSuccessful) result.body()!!.accessToken else throw Exception(
                 "Response code " + result.code() + ". Error:" + result.errorBody()?.string()
             )

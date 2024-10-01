@@ -22,7 +22,8 @@ internal fun GithubWebViewRoute(
 @Composable
 fun GithubWebViewScreen(modifier: Modifier, saveCode: (code: String, onSaveComplete:()->Unit)-> Unit, onFinish: (success: Boolean) -> Unit) {
 
-    val onlyAuthenticateUrl = "https://github.com/login/oauth/authorize?client_id=${BuildConfig.CLIENT_ID}&scope=repo"
+    val clientId = BuildConfig.CLIENT_ID
+    val onlyAuthenticateUrl = "https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo"
 //    val onlyAuthenticateUrl = "https://github.com/login/oauth/authorize?client_id=${BuildConfig.CLIENT_ID}"
 //    val installAndAuthenticateUrl = "https://github.com/apps/${BuildConfig.APP_NAME}/installations/new"
     Scaffold { innerPadding ->

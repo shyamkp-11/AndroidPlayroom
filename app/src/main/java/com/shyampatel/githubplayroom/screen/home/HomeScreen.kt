@@ -53,7 +53,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.shyampatel.core.common.RepoOwner
 import com.shyampatel.core.common.RepoOwnerType
-import com.shyampatel.githubplayroom.GithubPlayroomTopAppBar
+import com.shyampatel.ui.AndroidPlayroomTopAppBar
 import com.shyampatel.githubplayroom.R
 import com.shyampatel.ui.theme.AndroidPlayroomTheme
 import com.shyampatel.ui.theme.HomeIconTintColor
@@ -99,7 +99,7 @@ fun HomeScreen(
 ) {
     Scaffold(
         topBar = {
-            GithubPlayroomTopAppBar(
+            AndroidPlayroomTopAppBar(
                 titleRes = R.string.app_name,
             )
         },
@@ -338,7 +338,7 @@ fun OwnerProfileImage(
             painter = if (isError.not() && !isLocalInspection) {
                 imageLoader
             } else {
-                painterResource(R.drawable.user)
+                painterResource(com.shyampatel.ui.R.drawable.user)
             },
             contentDescription = null,
         )

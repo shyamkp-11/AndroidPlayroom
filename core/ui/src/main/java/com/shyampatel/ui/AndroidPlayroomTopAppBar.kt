@@ -1,6 +1,5 @@
-package com.shyampatel.githubplayroom
+package com.shyampatel.ui
 
-import android.R
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -22,7 +21,7 @@ import com.shyampatel.ui.theme.AndroidPlayroomTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GithubPlayroomTopAppBar(
+fun AndroidPlayroomTopAppBar(
     @StringRes titleRes: Int,
     modifier: Modifier = Modifier,
     topAppBarState: TopAppBarState = rememberTopAppBarState(),
@@ -49,8 +48,8 @@ fun GithubPlayroomTopAppBar(
 @Composable
 private fun GithubPlayroomTopAppBarPreview() {
     AndroidPlayroomTheme {
-        GithubPlayroomTopAppBar(
-            titleRes = R.string.untitled,
+        AndroidPlayroomTopAppBar(
+            titleRes = R.string.core_ui_untitled,
         )
     }
 }
