@@ -17,7 +17,7 @@ dependencyResolutionManagement {
 rootProject.name = "AndroidPlayroom"
 // enables typesafe importing of module dependency inside project
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-include (":app")
+include (":githubplayroom")
 include (":core:common")
 include (":core:data")
 include (":core:network")
