@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.shyampatel.android.application)
     alias(libs.plugins.shyampatel.android.application.compose)
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -29,23 +30,27 @@ android {
 }
 
 dependencies {
-
     implementation(projects.core.common)
     implementation(projects.core.data)
     implementation(projects.core.ui)
     implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
+    implementation(libs.accompanist.permissions)
+    implementation(libs.kotlinx.coroutines.play)
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.android)
+    implementation(libs.koin.compose)
+    implementation(libs.koin.androidx.startup)
     implementation (libs.androidx.core.ktx)
     implementation (libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.iconsExtended)
-    implementation(libs.koin.compose)
     implementation (libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.coil.kt)
     implementation(libs.coil.kt.compose)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

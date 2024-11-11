@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.data.GithubRepository
-import com.shyampatel.githubplayroom.ErrorMessage
+import com.shyampatel.ui.ErrorMessage
 import com.shyampatel.githubplayroom.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

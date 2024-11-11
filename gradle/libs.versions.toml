@@ -1,28 +1,32 @@
 [versions]
 accompanist = "0.34.0"
 # AGP and tools should be updated together
-androidGradlePlugin = "8.5.0"
-androidTools = "31.5.0"
-androidxActivity = "1.9.0"
+accompanistPermissions = "0.36.0"
+androidGradlePlugin = "8.5.2"
+androidMapsUtils = "3.9.0"
+androidTools = "31.7.1"
+androidxActivity = "1.9.2"
 androidxAppCompat = "1.7.0"
-androidxComposeBom = "2024.06.00"
+androidxComposeBom = "2024.09.03"
 androidxCore = "1.13.1"
-androidxLifecycle = "2.8.3"
-androidxNavigation = "2.7.7"
+androidxLifecycle = "2.8.6"
+androidxNavigation = "2.8.3"
 coil = "2.6.0"
 datastore = "1.1.1"
-koin-bom = "3.5.6"
-kotlin = "2.0.0"
+googleMapsServices = "2.2.0"
+koin-bom = "4.0.0"
+kotlin = "2.0.20"
 kotlinxCoroutines = "1.8.1"
 kotlinxDatetime = "0.5.0"
 kotlinxSerializationJson = "1.6.3"
-ksp = "2.0.0-1.0.22"
+ksp = "2.0.20-1.0.25"
 mapsCompose = "6.1.0"
+mapsUtilsKtx = "5.1.1"
 retrofitKotlinxSerializationJson = "1.0.0"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 room = "2.6.1"
-kotlinVersion = "1.9.0"
+kotlinVersion = "1.9.22"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -33,8 +37,11 @@ androidxJunit = "1.2.1"
 espressoCoreVersion = "3.6.1"
 lifecycleRuntimeKtx = "2.8.6"
 secretsGradlePlugin = "2.0.1"
+play-services-location = "21.3.0"
+slf4jSimple = "1.7.25"
 
 [libraries]
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
@@ -43,22 +50,27 @@ androidx-compose-material-iconsExtended = { group = "androidx.compose.material",
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-datastore-preferences = { group = "androidx.datastore", name="datastore-preferences", version.ref = "datastore" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-lifecycle-runtimeCompose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
+koin-androidx-startup = { group = "io.insert-koin", name = "koin-androidx-startup" }
 koin-bom = { module = "io.insert-koin:koin-bom", version.ref = "koin-bom" }
 koin-core = { module = "io.insert-koin:koin-core" }
 koin-android = { group = "io.insert-koin", name = "koin-android" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose" }
+kotlinx-coroutines-play = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+maps-utils = { module = "com.google.maps.android:android-maps-utils", version.ref = "androidMapsUtils" }
 maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "mapsCompose" }
+maps-utils-ktx = { module = "com.google.maps.android:maps-utils-ktx", version.ref = "mapsUtilsKtx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 retrofit-kotlin-serialization = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version.ref = "retrofitKotlinxSerializationJson" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -76,6 +88,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

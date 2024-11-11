@@ -1,4 +1,4 @@
-package com.shyampatel.githubplayroom
+package com.shyampatel.ui
 
 import androidx.annotation.StringRes
 

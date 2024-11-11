@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Geofence Playroom</string>
+    <string name="view_geofences_screen_top_bar_title">My Geofences</string>
+    <string name="channel_name">Geofence category</string>
+    <string name="channel_description">This corresponds to triggering notifications when geofences alerts are triggered</string>
+    <string name="home">Home</string>
 </resources>
