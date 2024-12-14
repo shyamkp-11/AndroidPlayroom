@@ -1,5 +1,4 @@
 [versions]
-accompanist = "0.34.0"
 # AGP and tools should be updated together
 accompanistPermissions = "0.36.0"
 androidGradlePlugin = "8.5.2"
@@ -13,7 +12,6 @@ androidxLifecycle = "2.8.6"
 androidxNavigation = "2.8.3"
 coil = "2.6.0"
 datastore = "1.1.1"
-googleMapsServices = "2.2.0"
 koin-bom = "4.0.0"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.8.1"
@@ -27,18 +25,14 @@ retrofit = "2.11.0"
 okhttp = "4.12.0"
 room = "2.6.1"
 kotlinVersion = "1.9.22"
-junit = "4.13.2"
-junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 material = "1.12.0"
-datastorePreferencesCoreJvm = "1.1.1"
 junitJunit = "4.13.2"
 androidxJunit = "1.2.1"
 espressoCoreVersion = "3.6.1"
 lifecycleRuntimeKtx = "2.8.6"
 secretsGradlePlugin = "2.0.1"
 play-services-location = "21.3.0"
-slf4jSimple = "1.7.25"
 
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
@@ -88,7 +82,9 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
+androidx-ui = { group = "androidx.compose.ui", name = "ui" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

@@ -3,7 +3,7 @@ package com.shyampatel.geofenceplayroom
 import android.content.Context
 import com.shyampatel.geofenceplayroom.screen.fencetriggered.FenceTriggeredViewModel
 import com.shyampatel.geofenceplayroom.screen.home.HomeViewModel
-import com.shyampatel.geofenceplayroom.screen.permissions.PermissionsViewModel
+import com.shyampatel.ui.permissions.PermissionsViewModel
 import com.shyampatel.geofenceplayroom.screen.viewgeofences.ViewGeofencesViewModel
 import kotlinx.coroutines.CoroutineScope
 import org.koin.core.module.dsl.viewModel

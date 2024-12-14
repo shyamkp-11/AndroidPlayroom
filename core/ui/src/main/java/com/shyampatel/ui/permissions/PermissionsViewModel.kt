@@ -1,4 +1,4 @@
-package com.shyampatel.geofenceplayroom.screen.permissions
+package com.shyampatel.ui.permissions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

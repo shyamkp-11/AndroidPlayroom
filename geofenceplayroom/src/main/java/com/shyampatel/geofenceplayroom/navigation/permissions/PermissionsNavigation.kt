@@ -4,12 +4,16 @@ import android.Manifest
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.shyampatel.geofenceplayroom.screen.permissions.PermissionsScreen
+import com.shyampatel.ui.permissions.PermissionsScreen
+import kotlinx.datetime.Month
 import kotlinx.serialization.Serializable
 
 const val PERMISSIONS_ROUTE = "permissions_route"
@@ -58,7 +62,8 @@ fun NavGraphBuilder.permissionsScreenForegroundLocation(
                     |2. Click "Permission" and then "Location"
                     |3. Set to "Allow all the time".
                 """.trimMargin(),
-            onGranted = onGranted
+            onGranted = onGranted,
+            modifier =  Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
         )
     }
 }
@@ -84,7 +89,8 @@ fun NavGraphBuilder.permissionsScreenBackgroundLocation(
                     """.trimMargin(),
                 onGranted = {
                     onGranted()
-                }
+                },
+                modifier =  Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
             )
         }
     }
@@ -116,6 +122,7 @@ fun NavGraphBuilder.permissionsScreenNotification(
                 openSettingsIntent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     .putExtra(Settings.EXTRA_APP_PACKAGE, LocalContext.current.packageName),
+                modifier =  Modifier.padding(vertical = 16.dp, horizontal = 16.dp),
             )
         }
     }

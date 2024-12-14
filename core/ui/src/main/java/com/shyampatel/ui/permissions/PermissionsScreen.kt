@@ -1,14 +1,15 @@
-package com.shyampatel.geofenceplayroom.screen.permissions
+package com.shyampatel.ui.permissions
 
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -26,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -35,7 +37,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun PermissionsScreen(
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
     title: String,
     description: String?,
     requiredTitle: String? = null,
@@ -55,7 +57,7 @@ fun PermissionsScreen(
     ) { innerPadding ->
         Box(modifier = modifier.padding(top = innerPadding.calculateTopPadding())) {
             PermissionsScreen(
-                modifier = modifier,
+                modifier = Modifier,
                 title = title,
                 description = description,
                 requiredTitle = requiredTitle,
@@ -76,8 +78,8 @@ fun PermissionsScreen(
 }
 
 @Composable
-private fun PermissionsScreen(
-    modifier: Modifier = Modifier,
+fun PermissionsScreen(
+    modifier: Modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
     title: String,
     description: String?,
     requiredTitle: String? = null,
@@ -90,7 +92,8 @@ private fun PermissionsScreen(
     onCancelButtonClicked: (() -> Unit)? = null,
     permissionsViewModel: PermissionsViewModel = koinViewModel(),
     settingsText: String = "Open Settings",
-    onGrantedComposable: @Composable (grantedPermissions: List<String>) -> Unit,
+    contentAlignment: Alignment = Alignment.TopStart,
+    onGrantedComposable: @Composable BoxScope.(grantedPermissions: List<String>) -> Unit,
 ) {
     val permissionsMap by permissionsViewModel.permissionsMap.collectAsStateWithLifecycle()
 
@@ -106,7 +109,8 @@ private fun PermissionsScreen(
         savePermissionMap = permissionsViewModel::savePermissionsMap,
         permissions = permissions,
         requiredPermissions = requiredPermissions,
-        onNextClickedComposable = onGrantedComposable,
+        contentAlignment = contentAlignment,
+        onGranted = onGrantedComposable,
         onNextClicked = {},
         cancelText = cancelText,
         onCancelButtonClicked = onCancelButtonClicked,
@@ -132,7 +136,8 @@ private fun PermissionsScreen(
     permissions: Set<String>,
     requiredPermissions: Set<String> = permissions,
     onNextClicked: (grantedPermissions: List<String>) -> Unit,
-    onNextClickedComposable: @Composable() ((grantedPermissions: List<String>) -> Unit)? = null,
+    contentAlignment: Alignment = Alignment.TopStart,
+    onGranted: @Composable (BoxScope.(grantedPermissions: List<String>) -> Unit)? = null,
 ) {
 
     val context = LocalContext.current
@@ -149,14 +154,25 @@ private fun PermissionsScreen(
 
     var readyToNavigateGranted by remember { mutableStateOf(false) }
     if (readyToNavigateGranted) {
-        if (onNextClickedComposable == null) {
+        if (onGranted == null) {
             LaunchedEffect(key1 = Unit) {
                 onNextClicked(permissionsState.permissions.filter { it.status.isGranted }
                     .map { it.permission })
             }
         } else {
-            onNextClickedComposable.invoke(permissionsState.permissions.filter { it.status.isGranted }
-                .map { it.permission })
+            /*Box(modifier = Modifier
+                .fillMaxSize()
+                .then(contentModifier),
+                contentAlignment = contentAlignment
+            ) {*/
+            Box(modifier = Modifier) {
+                onGranted(
+                    permissionsState.permissions
+                        .filter { it.status.isGranted }
+                        .map { it.permission },
+                )
+            }
+           /* }*/
         }
     }
 
@@ -230,6 +246,7 @@ private fun PermissionsScreen(
             )
         } else {
             PermissionsRequiredScreen(
+                modifier = modifier,
                 requiredTitle = requiredTitle,
                 requiredDescription = requiredSubtitle,
                 openSettingsIntent = openSettingsIntent,
@@ -280,26 +297,28 @@ private fun PermissionsScreen(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
-            .padding(vertical = 32.dp)
-            .fillMaxWidth()
-            .fillMaxHeight()
+        modifier = Modifier
+            .fillMaxSize()
+            .then(modifier),
+        contentAlignment = Alignment.TopStart,
     ) {
         Column(
-            modifier = Modifier,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .fillMaxSize(),
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(16.dp),
+                textAlign = TextAlign.Start,
+                modifier = Modifier
             )
             if (description != null) {
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(16.dp),
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.padding(top = 16.dp),
                 )
             }
         }
@@ -308,7 +327,6 @@ private fun PermissionsScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
                     .padding(bottom = 32.dp),
             ) {
                 Button(
@@ -331,7 +349,6 @@ private fun PermissionsScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
                     .padding(bottom = 32.dp),
                 onClick = { onButtonClicked() },
             ) {
@@ -339,4 +356,18 @@ private fun PermissionsScreen(
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PermissionsScreenPreview() {
+    PermissionsScreen(
+        modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+        title = "Title",
+        description = "Description",
+        onCancelButtonClicked = {},
+        onButtonClicked = {},
+        buttonText = "Next",
+        cancelText = "Cancel",
+    )
 }

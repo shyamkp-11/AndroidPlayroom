@@ -110,4 +110,4 @@ fun GeoFencePlayroomNavHost(
     }
 }
 
-const val uri = "https://www.ishyampatel.com"
+const val uri = "https://www.ishyampatel.com/geofenceplayroom"

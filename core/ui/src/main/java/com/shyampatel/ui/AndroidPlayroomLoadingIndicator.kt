@@ -1,6 +1,7 @@
 package com.shyampatel.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
@@ -17,6 +18,7 @@ fun AndroidPlayroomLoadingIndicator(modifier: Modifier) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .clickable {  }
             .background(Color.Gray.copy(alpha = 0.1f))
     ) {
         CircularProgressIndicator(

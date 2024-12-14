@@ -32,6 +32,7 @@
             <option value="$PROJECT_DIR$/core/ui" />
             <option value="$PROJECT_DIR$/geofenceplayroom" />
             <option value="$PROJECT_DIR$/githubplayroom" />
+            <option value="$PROJECT_DIR$/withbluetooth" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />
