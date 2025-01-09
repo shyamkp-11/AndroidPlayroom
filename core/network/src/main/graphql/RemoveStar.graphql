@@ -1,0 +1,13 @@
+mutation RemoveStar($starrableId: ID!) {
+    removeStar(input: {starrableId: $starrableId}) {
+        starrable {
+            ...starrable
+        }
+    }
+}
+fragment starrable on Starrable {
+    id
+    __typename
+    stargazerCount
+    viewerHasStarred
+}

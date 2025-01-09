@@ -5,7 +5,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class NetworkGithubRepoModel(
-    val id: Long,
+    @SerialName("id")
+    val serverId: Long,
     val name: String = "",
     @SerialName("full_name") val fullName: String = "",
     @SerialName("stargazers_count")val stars: Int = 0,
@@ -19,7 +20,8 @@ data class NetworkGithubRepoModel(
 @Serializable
 data class NetworkRepoOwner(
     val login: String,
-    val id: Long,
+    @SerialName("id")
+    val serverId: Long,
     @SerialName("avatar_url") val avatarUrl: String,
     @SerialName("html_url") val htmlUrl: String,
     val type: String,

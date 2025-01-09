@@ -1,0 +1,18 @@
+query RepoOwnerOrganizationWithRepo($userLogin: String!) {
+    organization(login: $userLogin) {
+        ...organization
+    }
+}
+
+fragment organization on Organization {
+    name
+    repositories(first: 100) {
+        edges {
+            cursor
+            node {
+                ... repository
+            }
+        }
+        ...repositoriesConnection
+    }
+}

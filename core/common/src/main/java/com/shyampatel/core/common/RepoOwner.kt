@@ -1,7 +1,7 @@
 package com.shyampatel.core.common
 
 data class RepoOwner(
-    val id: Long,
+    val serverId: String,
     val login: String,
     val name: String?,
     val company: String?,

@@ -1,0 +1,5 @@
+query GetRepository($repoName: String!, $owner: String!){
+    repository(name: $repoName, owner: $owner) {
+        ...repository
+    }
+}

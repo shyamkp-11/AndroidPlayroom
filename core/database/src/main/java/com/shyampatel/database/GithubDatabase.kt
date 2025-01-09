@@ -7,7 +7,7 @@ import com.shyampatel.database.util.RepoOwnerTypeConverter
 
 @Database(
     entities = [GithubRepoEntity::class, RepoOwnerEntity::class, StarredEntity::class],
-    version = 4
+    version = 5
 )
 @TypeConverters(
     RepoOwnerTypeConverter::class,

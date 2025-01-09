@@ -16,7 +16,7 @@ interface StarredDao {
             WHERE userId in (:userId)
             """
     )
-    fun getStarredEntitiesForUsers(userId: List<Long>): Flow<List<StarredEntity>>
+    fun getStarredEntitiesForUsers(userId: List<String>): Flow<List<StarredEntity>>
 
     @Query(
         value = """
@@ -24,7 +24,7 @@ interface StarredDao {
         WHERE repoId = :repoId
         """,
     )
-    fun getStarredEntitiesForRepo(repoId: Long): Flow<List<StarredEntity>>
+    fun getStarredEntitiesForRepo(repoId: String): Flow<List<StarredEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnoreStarredEntities(starredEntities: List<StarredEntity>)
@@ -40,14 +40,14 @@ interface StarredDao {
             DELETE FROM repo_starred WHERE userId = :userId 
         """
     )
-    suspend fun deleteStarredForUser(userId: Long)
+    suspend fun deleteStarredForUser(userId: String)
 
     @Query(
         value = """
             DELETE FROM repo_starred WHERE repoId = :repoId 
         """
     )
-    suspend fun deleteStarredForRepo(repoId: Long)
+    suspend fun deleteStarredForRepo(repoId: String)
 
     @Query(
         value = """

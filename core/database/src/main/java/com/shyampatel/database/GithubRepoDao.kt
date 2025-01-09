@@ -21,24 +21,24 @@ interface GithubRepoDao {
     @Query(
         value = "SELECT * FROM github_repo WHERE github_repo.ownerId = :ownerId"
     )
-    fun getRepoEntitiesForOwner(ownerId: Long): Flow<List<GithubRepoEntity>>
+    fun getRepoEntitiesForOwner(ownerId: String): Flow<List<GithubRepoEntity>>
 
     @Query(
         value = """
         SELECT * FROM github_repo
-        WHERE id IN (:ids)
+        WHERE serverId IN (:serverIds)
     """,
     )
-    fun getGithubRepoEntities(ids: List<Long>): Flow<List<GithubRepoEntity>>
+    fun getGithubRepoEntities(serverIds: List<String>): Flow<List<GithubRepoEntity>>
 
     @Query(
         value = """
-            SELECT * FROM github_repo WHERE id IN (
+            SELECT * FROM github_repo WHERE serverId IN (
         SELECT repoId FROM repo_starred WHERE userId = :userId
         )
     """,
     )
-    fun getStarredGithubRepoEntitiesForUser(userId: Long): Flow<List<GithubRepoEntity>>
+    fun getStarredGithubRepoEntitiesForUser(userId: String): Flow<List<GithubRepoEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnoreGithubRepoEntities(githubRepoEntities: List<GithubRepoEntity>)
@@ -53,15 +53,15 @@ interface GithubRepoDao {
             WHERE ownerId = :ownerId
         """,
     )
-    suspend fun deleteGithubRepoEntitiesForOwner(ownerId: Long)
+    suspend fun deleteGithubRepoEntitiesForOwner(ownerId: String)
 
     @Query(
         value = """
             DELETE FROM github_repo
-            WHERE id in (:ids)
+            WHERE serverId in (:ids)
         """,
     )
-    suspend fun deleteGithubRepoEntities(ids: List<Int>)
+    suspend fun deleteGithubRepoEntities(ids: List<String>)
 
     @Query(
         value = """

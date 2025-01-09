@@ -1,0 +1,13 @@
+query GetRepositories {
+    viewer {
+        repositories(first: 100) {
+            edges {
+                cursor
+                node {
+                    ...repository
+                }
+            }
+            ...repositoriesConnection
+        }
+    }
+}

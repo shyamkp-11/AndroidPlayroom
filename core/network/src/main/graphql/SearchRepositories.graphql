@@ -1,0 +1,31 @@
+query SearchRepositories($query: String!, $first: Int! = 25, $after: String) {
+    search(query: $query, type: REPOSITORY, first: $first, after: $after) {
+        edges {
+            node {
+                # Inline Fragments
+#                ... on Repository {
+#                    name
+#                    owner {
+#                        login
+#                    }
+#                    id
+#                    description
+#                    isPrivate
+#                    stargazers {
+#                        totalCount
+#                    }
+#                    primaryLanguage {
+#                        name
+#                    }
+#                }
+                ...repository
+            }
+        }
+        pageInfo {
+            startCursor
+            endCursor
+            hasNextPage
+            hasPreviousPage
+        }
+    }
+}

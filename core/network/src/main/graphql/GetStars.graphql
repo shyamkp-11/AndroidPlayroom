@@ -1,0 +1,18 @@
+query GetStars {
+    viewer {
+        starredRepositories(first: 100) {
+            edges {
+                cursor
+                node {
+                    ...repository
+                }
+            }
+            pageInfo {
+                endCursor
+                startCursor
+                hasNextPage
+                hasPreviousPage
+            }
+        }
+    }
+}

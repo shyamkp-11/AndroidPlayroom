@@ -54,7 +54,7 @@ fun MyRepositoriesScreen(
                 LazyColumn(modifier = contentModifier, contentPadding = innerPadding) {
                     items(
                         items = myRepositoriesState.list,
-                        key = { githubRepoModel -> githubRepoModel.id }
+                        key = { githubRepoModel -> githubRepoModel.serverId }
                     ) { task ->
                         GithubRepoListItem(
                             repo = task,
@@ -80,11 +80,10 @@ fun MyRepositoriesScreen(
 private fun MyRepositoriesPrev() {
     GithubRepoListItem(
         repo = GithubRepoModel(
-            1,
             name = "name",
             fullName = "First Repo",
             stars = 1000,
-            ownerId = 1,
+            ownerId = "1",
             private = false,
             htmlUrl = "",
             ownerLogin = "",
@@ -92,6 +91,7 @@ private fun MyRepositoriesPrev() {
             ownerType = RepoOwnerType.USER,
             description = "description",
             language = "language",
+            serverId = ""
         ), onStarClick = {},
         uriHandler = LocalUriHandler.current
     )

@@ -129,12 +129,12 @@ fun SearchRepositoriesScreen(
                             LazyColumn(modifier = Modifier, contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding())) {
                                 items(
                                     items = it,
-                                    key = { githubRepoModel -> githubRepoModel.id }
+                                    key = { githubRepoModel -> githubRepoModel.serverId }
                                 ) { repo ->
                                     GithubRepoListItem(
                                         repo = repo,
                                         onStarClick = { onStarRepo(repo) },
-                                        isRepoStarred = searchReposState.starredRepos.contains(repo.id),
+                                        isRepoStarred = searchReposState.starredRepos.contains(repo.serverId),
                                         uriHandler = LocalUriHandler.current
                                     )
                                 }
@@ -276,25 +276,24 @@ fun SearchRepositoriesScreenPreview() {
             searchReposState = SearchReposState.HasSearchResults (
                 searchResults = listOf(
                     GithubRepoModel(
-                        1,
                         name = "name 1",
                         fullName = "First Repo",
                         stars = 1000,
-                        ownerId = 1,
+                        ownerId = "1",
                         private = false,
                         htmlUrl = "",
                         ownerLogin = "",
                         ownerAvatarUrl = "",
                         ownerType = RepoOwnerType.USER,
                         description = "description 1",
-                        language = "language 1"
+                        language = "language 1",
+                        serverId = "11"
                     ),
                     GithubRepoModel(
-                        2,
                         fullName = "Second Repo",
                         name = "name 2",
                         stars = 1200,
-                        ownerId = 2,
+                        ownerId = "2",
                         private = true,
                         htmlUrl = "",
                         ownerLogin = "",
@@ -302,6 +301,7 @@ fun SearchRepositoriesScreenPreview() {
                         ownerType = RepoOwnerType.USER,
                         description = "description 2",
                         language = "language 2",
+                        serverId = "12"
                     ),
                 ),
                 showUndoStarred = null,

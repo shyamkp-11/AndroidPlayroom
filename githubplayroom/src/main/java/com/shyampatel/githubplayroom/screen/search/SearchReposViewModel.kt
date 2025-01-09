@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shyampatel.core.common.GithubRepoModel
-import com.shyampatel.core.data.GithubRepository
+import com.shyampatel.core.data.github.GithubRepository
 import com.shyampatel.ui.ErrorMessage
 import com.shyampatel.githubplayroom.R
 import kotlinx.coroutines.flow.Flow
@@ -21,6 +21,11 @@ import java.util.UUID
 class SearchReposViewModel(
     private val repository: GithubRepository
 ) : ViewModel() {
+
+    companion object {
+        const val TAG = "SearchReposViewModel"
+        private const val SEARCH_QUERY_MIN_LENGTH = 2
+    }
 
     private val viewModelState = MutableStateFlow(
         SearchViewModelState(
@@ -56,9 +61,9 @@ class SearchReposViewModel(
             authenticatedUserToken.collect { token ->
                 if (!token.isNullOrEmpty()) {
                     repository.getStarredRepositoriesLiveFlow().map { result ->
-                        result.getOrNull() ?: emptyList<Long>().also {
+                        result.getOrNull() ?: emptyList<String>().also {
                             Log.e(
-                                SearchReposViewModel::class.simpleName,
+                                TAG,
                                 result.exceptionOrNull()?.stackTraceToString() ?: ""
                             )
                         }
@@ -230,7 +235,7 @@ sealed interface SearchReposState {
         override val isLoading: Boolean,
         override val errorMessages: List<ErrorMessage>,
         override val searchInput: String,
-        val starredRepos: List<Long>,
+        val starredRepos: List<String>,
     ) : SearchReposState
 }
 
@@ -240,7 +245,7 @@ private data class SearchViewModelState(
     val errorMessages: List<ErrorMessage> = emptyList(),
     val searchInput: String = "",
     val showUndoStarred: GithubRepoModel?,
-    val starredRepo: List<Long> = emptyList(),
+    val starredRepo: List<String> = emptyList(),
 ) {
     fun toUiState(): SearchReposState =
         if (searchResults == null) {
@@ -260,5 +265,3 @@ private data class SearchViewModelState(
             )
         }
 }
-
-private const val SEARCH_QUERY_MIN_LENGTH = 2

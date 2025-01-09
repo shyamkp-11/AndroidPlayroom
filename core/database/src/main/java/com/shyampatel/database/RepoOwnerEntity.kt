@@ -10,7 +10,7 @@ import com.shyampatel.core.common.RepoOwnerType
 )
 data class RepoOwnerEntity(
     @PrimaryKey
-    val id: Long,
+    val serverId: String,
     val login: String,
     @ColumnInfo("avatar_url") val avatarUrl: String,
     @ColumnInfo("html_url") val htmlUrl: String,

@@ -370,13 +370,13 @@ fun HomeScreenPreviewLoggedIn() {
             onLoginClicked = {},
             homeScreenState = HomeViewModel.HomeState.LoggedIn(
                 RepoOwner(
-                    id = 1L,
                     name = "Name",
                     login = "login",
                     avatarUrl = "",
                     htmlUrl = "",
                     type = RepoOwnerType.USER,
-                    company = null
+                    company = null,
+                    serverId = ""
                 )
             ),
             onSignoutClicked = {},

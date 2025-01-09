@@ -3,7 +3,7 @@ package com.shyampatel.githubplayroom
 import android.app.Application
 import coil.ImageLoader
 import coil.ImageLoaderFactory
-import com.shyampatel.core.data.getDataModule
+import com.shyampatel.core.data.github.getDataModule
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -19,6 +19,7 @@ class GithubPlayroomApplication : Application(), ImageLoaderFactory {
             modules(
                 getDataModule(
                     baseUrl = "https://api.github.com",
+                    graphqlBaseUrl = "https://api.github.com/graphql",
                     applicationContext = applicationContext,
                     defaultDispatcher = Dispatchers.Default,
                     ioDispatcher = Dispatchers.IO

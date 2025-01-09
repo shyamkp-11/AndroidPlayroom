@@ -3,7 +3,7 @@ package com.shyampatel.githubplayroom.screen.login
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shyampatel.core.data.GithubRepository
+import com.shyampatel.core.data.github.GithubRepository
 import kotlinx.coroutines.launch
 
 class GithubLoginViewModel(

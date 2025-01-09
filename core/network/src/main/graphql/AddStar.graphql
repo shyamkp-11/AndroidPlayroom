@@ -1,0 +1,7 @@
+mutation AddStar($addStarInput: AddStarInput!) {
+    addStar(input: $addStarInput) {
+        starrable {
+           ...starrable
+        }
+    }
+}

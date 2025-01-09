@@ -1,0 +1,56 @@
+query RepoOwnerUserWithRepoAndStars($userLogin: String!, $starredFirst: Int = 25, $starredAfter: String, $ownedRepoFirst: Int = 25, $ownedRepoAfter: String ) {
+    user(login: $userLogin) {
+        ...user
+    }
+}
+fragment user on User {
+    name
+    company
+    starredRepositories(first: $starredFirst, after: $starredAfter) {
+        edges {
+            cursor
+            node {
+                ... repository
+            }
+        }
+    }
+    repositories(first: $ownedRepoFirst, after: $ownedRepoAfter) {
+        edges {
+            cursor
+            node {
+                ... repository
+            }
+        }
+        ...repositoriesConnection
+    }
+}
+fragment repository on Repository {
+    name
+    nameWithOwner
+    owner {
+        avatarUrl
+        login
+        id
+        __typename
+    }
+    id
+    __typename
+    description
+    isPrivate
+    url
+    stargazers {
+        totalCount
+    }
+    primaryLanguage {
+        name
+    }
+    viewerHasStarred
+}
+fragment repositoriesConnection on RepositoryConnection {
+    pageInfo {
+        endCursor
+        startCursor
+        hasNextPage
+        hasPreviousPage
+    }
+}

@@ -73,7 +73,7 @@ fun GithubRepoListItem(
             tween(durationMillis = 500)
         }
     ) { isStarred ->
-        if (isStarred) StarColor else MaterialTheme.colorScheme.primary
+        if (isStarred) StarColor else MaterialTheme.colorScheme.onSurfaceVariant
     }
     val starScale by transition.animateFloat(
         label = "star scale",
@@ -295,11 +295,10 @@ private fun GithubRepoListItemPrev() {
         var isStarred: Boolean by remember { mutableStateOf(true) }
         GithubRepoListItem(
             repo = GithubRepoModel(
-                1,
                 name = "repo name",
                 fullName = "First Repo",
                 stars = 1000,
-                ownerId = 1,
+                ownerId = "",
                 private = false,
                 htmlUrl = "",
                 ownerLogin = "owner name",
@@ -307,6 +306,7 @@ private fun GithubRepoListItemPrev() {
                 ownerType = RepoOwnerType.USER,
                 description = "description",
                 language = "language",
+                serverId = ""
             ),
             onStarClick = { isStarred = !isStarred },
             isRepoStarred = isStarred,

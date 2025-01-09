@@ -9,7 +9,14 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
+        all{
+            buildConfigField("String", "githubplayroom_api_mode", "\"${properties["GITHUBPLAYROOM_API_MODE"]}\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

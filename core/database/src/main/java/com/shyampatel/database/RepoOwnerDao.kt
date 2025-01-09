@@ -18,10 +18,10 @@ interface RepoOwnerDao {
     @Query(
         value = """
         SELECT * FROM repo_owner
-        WHERE id IN (:ids)
+        WHERE serverId IN (:ids)
     """,
     )
-    fun getRepoOwnerEntities(ids: Set<Long>): Flow<List<RepoOwnerEntity>>
+    fun getRepoOwnerEntities(ids: Set<String>): Flow<List<RepoOwnerEntity>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertOrIgnoreRepoOwnerEntities(repoOwnerEntities: List<RepoOwnerEntity>)
@@ -32,7 +32,7 @@ interface RepoOwnerDao {
     @Query(
         value = """
             DELETE FROM repo_owner
-            WHERE id in (:ids)
+            WHERE serverId in (:ids)
         """,
     )
     suspend fun deleteRepoOwnerEntities(ids: List<Int>)

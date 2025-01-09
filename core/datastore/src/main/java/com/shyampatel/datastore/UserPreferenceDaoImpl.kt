@@ -50,7 +50,7 @@ class UserPreferenceDaoImpl(private val preferencesDataStore: DataStore<Preferen
     override suspend fun saveAuthenticatedOwner(owner: RepoOwner) {
         withContext(ioDispatcher) {
             preferencesDataStore.edit { preferences ->
-                preferences[OWNER_ID] = owner.id.toString()
+                preferences[OWNER_ID] = owner.serverId
                 preferences[OWNER_LOGIN] = owner.login
                 preferences[OWNER_NAME] = owner.name?: ""
                 preferences[OWNER_TYPE] = owner.type.toString()
@@ -65,11 +65,11 @@ class UserPreferenceDaoImpl(private val preferencesDataStore: DataStore<Preferen
        return preferencesDataStore.data.map {
            preferences ->
            val ownerId = preferences[OWNER_ID]
-           if(ownerId.isNullOrEmpty() || ownerId.toLong() == 0L)
+           if(ownerId.isNullOrEmpty())
                return@map null
            else {
                RepoOwner(
-                   id = ownerId.toLong(),
+                   serverId = ownerId,
                    login = preferences[OWNER_LOGIN]!!,
                    name = if (preferences[OWNER_NAME].isNullOrEmpty()) null else preferences[OWNER_NAME],
                    type =  enumValueOf<RepoOwnerType>(preferences[OWNER_TYPE]!!.uppercase(Locale.getDefault())),

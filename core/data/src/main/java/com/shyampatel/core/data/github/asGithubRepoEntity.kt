@@ -1,4 +1,4 @@
-package com.shyampatel.core.data
+package com.shyampatel.core.data.github
 
 import com.shyampatel.core.common.GithubRepoModel
 import com.shyampatel.core.common.RepoOwner
@@ -10,13 +10,13 @@ import com.shyampatel.network.NetworkRepoOwner
 import java.util.Locale
 
 fun NetworkGithubRepoModel.asGithubRepoEntity() = GithubRepoEntity(
-    id = id,
+    serverId = serverId.toString(),
     name = name,
     fullName = fullName,
     stars = stars,
     htmlUrl = htmlUrl,
     private = private,
-    ownerId = owner.id,
+    ownerId = owner.serverId.toString(),
     ownerLogin = owner.login,
     ownerAvtarUrl = owner.avatarUrl,
     ownerType = enumValueOf<RepoOwnerType>(owner.type.uppercase(Locale.getDefault())),
@@ -24,8 +24,18 @@ fun NetworkGithubRepoModel.asGithubRepoEntity() = GithubRepoEntity(
     language = language,
 )
 
+fun GithubRepoModel.asRepoOwnerEntity() = RepoOwnerEntity (
+    serverId = serverId,
+    login = ownerLogin,
+    htmlUrl = htmlUrl,
+    type =  enumValueOf<RepoOwnerType>(ownerType.toString()),
+    avatarUrl = ownerAvatarUrl,
+    name = null,
+    company = null,
+)
+
 fun NetworkGithubRepoModel.asRepoOwnerEntity() = RepoOwnerEntity(
-    id = owner.id,
+    serverId = owner.serverId.toString(),
     login = owner.login,
     htmlUrl = owner.htmlUrl,
     type =  enumValueOf<RepoOwnerType>(owner.type.uppercase(Locale.getDefault())),
@@ -35,7 +45,7 @@ fun NetworkGithubRepoModel.asRepoOwnerEntity() = RepoOwnerEntity(
 )
 
 fun NetworkRepoOwner.asRepoOwnerEntity() = RepoOwnerEntity(
-    id = id,
+    serverId = serverId.toString(),
     login = login,
     htmlUrl = htmlUrl,
     type =  enumValueOf<RepoOwnerType>(type.uppercase(Locale.getDefault())),
@@ -45,7 +55,7 @@ fun NetworkRepoOwner.asRepoOwnerEntity() = RepoOwnerEntity(
 )
 
 fun GithubRepoEntity.asGithubRepoModel() = GithubRepoModel(
-    id = id,
+    serverId = serverId,
     name = name,
     fullName = fullName,
     stars = stars,
@@ -59,8 +69,23 @@ fun GithubRepoEntity.asGithubRepoModel() = GithubRepoModel(
     language = language,
 )
 
+fun GithubRepoModel.asGithubRepoEntity() = GithubRepoEntity(
+    serverId = serverId,
+    name = name,
+    fullName = fullName,
+    stars = stars,
+    htmlUrl = htmlUrl,
+    private = private,
+    ownerId = ownerId,
+    ownerLogin = ownerLogin,
+    ownerAvtarUrl = ownerAvatarUrl,
+    ownerType = ownerType,
+    description = description,
+    language = language,
+)
+
 fun RepoOwnerEntity.asRepoOwner() = RepoOwner(
-    id = id,
+    serverId = serverId,
     login = login,
     htmlUrl = htmlUrl,
     type =  type,

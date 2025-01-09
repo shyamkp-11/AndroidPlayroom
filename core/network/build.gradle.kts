@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.shyampatel.android.library)
+    alias(libs.plugins.apollo)
     id("kotlinx-serialization")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
@@ -19,6 +20,16 @@ android {
         }
     }
 }
+apollo {
+    service("service") {
+        packageName.set("com.shyampatel.network.graphql")
+        introspection {
+            endpointUrl.set("https://api.github.com/graphql")
+            headers.put("Authorization", "Add token here for apollo plugin introspection")
+            schemaFile.set(file("src/main/graphql/schema.graphqls"))
+        }
+    }
+}
 
 dependencies {
     implementation(projects.core.common)
@@ -31,6 +42,7 @@ dependencies {
     implementation(libs.retrofit.kotlin.serialization)
     implementation(libs.coil.kt)
     implementation(libs.coil.kt.svg)
+    implementation(libs.apollo.runtime)
 }
 
 secrets {

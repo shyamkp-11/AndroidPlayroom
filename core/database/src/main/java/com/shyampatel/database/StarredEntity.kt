@@ -7,6 +7,6 @@ import androidx.room.Entity
     primaryKeys = ["userId", "repoId"]
 )
 data class StarredEntity(
-    val userId: Long,
-    val repoId: Long
+    val userId: String,
+    val repoId: String
 )

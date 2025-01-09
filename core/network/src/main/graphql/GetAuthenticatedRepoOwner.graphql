@@ -1,0 +1,11 @@
+query GetAuthenticatedRepoOwner{
+    viewer {
+        name
+        id
+        login
+        company
+        avatarUrl
+        url
+        __typename
+    }
+}

@@ -95,7 +95,7 @@ fun MyStarredScreen(
                     .nestedScroll(scrollBehavior.nestedScrollConnection),) {
                     items(
                         items = myStarredState.list,
-                        key = { githubRepoModel -> githubRepoModel.id },
+                        key = { githubRepoModel -> githubRepoModel.serverId },
                     ) { repo ->
                         GithubRepoListItem(
                             repo = repo,
@@ -122,11 +122,10 @@ fun MyStarredScreen(
 @Composable
 private fun MyStarredPrev() {
     val model = GithubRepoModel(
-        1,
         name = "name",
         fullName = "First Repo",
         stars = 1000,
-        ownerId = 1,
+        ownerId = "1",
         private = false,
         htmlUrl = "",
         ownerLogin = "",
@@ -134,6 +133,7 @@ private fun MyStarredPrev() {
         ownerType = RepoOwnerType.USER,
         description = "description",
         language = "language",
+        serverId = ""
     )
     MyStarredScreen(
         myStarredState = MyStarredState.Success(
