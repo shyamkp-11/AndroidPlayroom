@@ -18,14 +18,23 @@ fun GithubPlayroomNavHost(
         exitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(700)) },
         popEnterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700)) },
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700)) },
-        startDestination = HOME_ROUTE,
+        startDestination = HomeNavigation,
         modifier = modifier
     ) {
+
+        permissionsScreenNotification(
+            onGranted = {
+                navController.previousBackStackEntry?.savedStateHandle?.set(ENABLE_NOTIFICATIONS_KEY, true)
+                navController.popBackStack()
+                        },
+            onCancelButtonClicked = navController::popBackStack,
+        )
         homeScreen(
             onLoginClicked = navController::navigateToGithubLoginWebview,
             onMaxStarReposClicked = navController::navigateToSearch,
             onMyRepositoriesClicked = navController::navigateToMyRepositories,
-            onStarredRepositoriesClicked = navController::navigateToMyStarred
+            onStarredRepositoriesClicked = navController::navigateToMyStarred,
+            navigateToPermissionsScreen = navController::navigateNotificationPermissions
         )
         searchReposScreen(
             onBackClick = navController::popBackStack,

@@ -1,6 +1,9 @@
 package com.shyampatel.githubplayroom.screen.home
 
+import android.content.Intent
 import android.webkit.CookieManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -22,7 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.sharp.Search
 import androidx.compose.material.icons.sharp.Star
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,10 +59,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.messaging.FirebaseMessaging
 import com.shyampatel.core.common.RepoOwner
 import com.shyampatel.core.common.RepoOwnerType
+import com.shyampatel.githubplayroom.BuildConfig
 import com.shyampatel.ui.AndroidPlayroomTopAppBar
 import com.shyampatel.githubplayroom.R
+import com.shyampatel.githubplayroom.screen.login.AuthenticationActivity
+import com.shyampatel.githubplayroom.screen.login.AuthenticationActivity.Companion.KEY_TOKEN
+import com.shyampatel.githubplayroom.screen.login.InstallationActivity
 import com.shyampatel.ui.theme.AndroidPlayroomTheme
 import com.shyampatel.ui.theme.HomeIconTintColor
 import com.shyampatel.ui.theme.SigninColor
@@ -72,21 +88,53 @@ internal fun HomeScreenRoute(
     onLoginClicked: () -> Unit,
     onMyRepositoriesClicked: () -> Unit,
     onStarredRepositoriesClicked: () -> Unit,
+    navigateToPermissionsScreen: () -> Unit,
     homeViewModel: HomeViewModel = koinViewModel(),
+    enableNotificationsIfNot: Boolean,
 ) {
+//    LaunchedEffect(key1 = Unit) {
+//        FirebaseMessaging.getInstance().deleteToken()
+//    }
+    val context = LocalContext.current
     val homeScreenState: HomeViewModel.HomeState by homeViewModel.isUserAuthenticated.collectAsStateWithLifecycle()
+    val loggedInLoading: Boolean by homeViewModel.loggedInLoading.collectAsStateWithLifecycle()
+    val result = remember { mutableStateOf<String?>(null) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result.value = it.data?.getStringExtra(KEY_TOKEN)
+        }
+
+    LaunchedEffect(key1 = enableNotificationsIfNot) {
+        if (homeScreenState is HomeViewModel.HomeState.LoggedIn) {
+            if (enableNotificationsIfNot && !(homeScreenState as HomeViewModel.HomeState.LoggedIn).notificationsEnabled) {
+                homeViewModel.toggleNotifications()
+            }
+        }
+    }
+
     HomeScreen(
         modifier = modifier,
         onSearchClicked = onSearchClicked,
-        onLoginClicked = onLoginClicked,
+        onLoginClicked = {
+            if (BuildConfig.WEB_AUTHENTICATION_MODE == "CHROME_CUSTOM_TABS") {
+                launcher.launch(Intent(context, AuthenticationActivity::class.java))
+            } else {
+                onLoginClicked()
+            }
+        },
         onSignoutClicked = homeViewModel::signOut,
         homeScreenState = homeScreenState,
         onMyRepositoriesClicked = onMyRepositoriesClicked,
         onStarredRepositoriesClicked = onStarredRepositoriesClicked,
+        onNotificationsToggled = homeViewModel::toggleNotifications,
+        loggedInLoading = loggedInLoading,
+        navigateToPermissionsScreen = navigateToPermissionsScreen,
+        openInstallationScreen = {
+            launcher.launch(Intent(context, InstallationActivity::class.java))
+        }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -94,8 +142,12 @@ fun HomeScreen(
     onLoginClicked: () -> Unit,
     homeScreenState: HomeViewModel.HomeState,
     onStarredRepositoriesClicked: () -> Unit,
+    onNotificationsToggled: () -> Unit,
     onSignoutClicked: (deleteCookieData: suspend () -> Unit) -> Unit,
     onMyRepositoriesClicked: () -> Unit,
+    loggedInLoading: Boolean,
+    navigateToPermissionsScreen: () -> Unit,
+    openInstallationScreen: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -104,125 +156,155 @@ fun HomeScreen(
             )
         },
     ) { innerPadding ->
-        Column(
-            modifier = modifier
-                .padding(innerPadding)
-                .padding(top = 10.dp)
-            ,
-        ) {
-            AnimatedVisibility(homeScreenState is HomeViewModel.HomeState.LoggedIn) {
-                if (homeScreenState is HomeViewModel.HomeState.LoggedIn) {
-                    Row(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp)
-                    ) {
-                        OwnerProfileImage(
-                            repoOwnerImageUrl = homeScreenState.authenticatedOwner.avatarUrl,
-                            cropCircle = homeScreenState.authenticatedOwner.type == RepoOwnerType.USER
-                        )
-                        Column(
+
+        val notificationPermissionGranted = rememberPermissionState(permission = "android.permission.POST_NOTIFICATIONS")
+
+            Column(
+                modifier = modifier
+                    .padding(innerPadding)
+                    .padding(top = 10.dp),
+            ) {
+                AnimatedVisibility(homeScreenState is HomeViewModel.HomeState.LoggedIn) {
+                    if (homeScreenState is HomeViewModel.HomeState.LoggedIn) {
+                        Row(
                             modifier = Modifier
-                                .padding(start = 10.dp)
-                                .align(Alignment.CenterVertically)
+                                .padding(horizontal = 10.dp)
                         ) {
-                            Text(
-                                text = homeScreenState.authenticatedOwner.name ?: "",
-                                modifier = Modifier,
-                                style = MaterialTheme.typography.headlineSmall
+                            OwnerProfileImage(
+                                repoOwnerImageUrl = homeScreenState.authenticatedOwner.avatarUrl,
+                                cropCircle = homeScreenState.authenticatedOwner.type == RepoOwnerType.USER
                             )
-                            Text(
-                                text = homeScreenState.authenticatedOwner.login,
-                                modifier = modifier,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .padding(start = 10.dp)
+                                    .align(Alignment.CenterVertically)
+                            ) {
+                                Text(
+                                    text = homeScreenState.authenticatedOwner.name ?: "",
+                                    modifier = Modifier,
+                                    style = MaterialTheme.typography.headlineSmall
+                                )
+                                Text(
+                                    text = homeScreenState.authenticatedOwner.login,
+                                    modifier = modifier,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
-            }
-            Surface(
-                modifier = Modifier.padding(
-                    top = 24.dp
-                ),
-                color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier
-                            .clickable {
-                                onSearchClicked()
-                            }, verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        HomeScreenRow(
-                            modifier = Modifier,
-                            text = "Search Repositories",
-                            imageVector = Icons.Sharp.Search,
-                            contentDescription = "Search repositories",
-                            iconBackgroundColor = HomeIconTintColor,
-                            iconTint = Color.White
+                Surface(
+                    modifier = Modifier.padding(
+                        top = 24.dp
+                    ),
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    onSearchClicked()
+                                }, verticalAlignment = Alignment.CenterVertically
                         ) {
-                            onSearchClicked()
-                        }
-                    }
-                    AnimatedVisibility(visible = homeScreenState is HomeViewModel.HomeState.LoggedIn) {
-                        Column {
                             HomeScreenRow(
                                 modifier = Modifier,
-                                text = "My Repositories",
-                                imageVector = Icons.Filled.Code,
-                                contentDescription = "My Repositories",
+                                text = "Search Repositories",
+                                imageVector = Icons.Sharp.Search,
+                                contentDescription = "Search repositories",
                                 iconBackgroundColor = HomeIconTintColor,
                                 iconTint = Color.White
                             ) {
-                                onMyRepositoriesClicked()
+                                onSearchClicked()
                             }
-                            HomeScreenRow(
-                                modifier = Modifier,
-                                text = "Starred",
-                                imageVector = Icons.Sharp.Star,
-                                contentDescription = "Starred Repositories",
-                                iconBackgroundColor = StarColor,
-                                iconTint = Color.White
-                            ) {
-                                onStarredRepositoriesClicked()
-                            }
-                            HomeScreenRow(
-                                modifier = Modifier,
-                                text = "Sign out",
-                                imageVector = Icons.AutoMirrored.Filled.Logout,
-                                contentDescription = "Sign out",
-                                bottomSpacer = false,
-                                iconBackgroundColor = SignoutColor,
-                                iconTint = Color.White
-                            ) {
-                                onSignoutClicked {
-                                    withContext(Dispatchers.Default) {
-                                        CookieManager.getInstance().removeAllCookies(null);
-                                        CookieManager.getInstance().flush();
+                        }
+                        AnimatedVisibility(visible = homeScreenState is HomeViewModel.HomeState.LoggedIn) {
+                            Column {
+                                HomeScreenRow(
+                                    modifier = Modifier,
+                                    text = "My Repositories",
+                                    imageVector = Icons.Filled.Code,
+                                    contentDescription = "My Repositories",
+                                    iconBackgroundColor = HomeIconTintColor,
+                                    iconTint = Color.White
+                                ) {
+                                    onMyRepositoriesClicked()
+                                }
+                                HomeScreenRow(
+                                    modifier = Modifier,
+                                    text = "Starred",
+                                    imageVector = Icons.Sharp.Star,
+                                    contentDescription = "Starred Repositories",
+                                    iconBackgroundColor = StarColor,
+                                    iconTint = Color.White
+                                ) {
+                                    onStarredRepositoriesClicked()
+                                }
+                                if (BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE != "OAUTH" && homeScreenState is HomeViewModel.HomeState.LoggedIn) {
+                                    HomeScreenRow(
+                                        modifier = Modifier,
+                                        text = if (homeScreenState.notificationsEnabled) "Notifications On" else "Notifications Off",
+                                        imageVector = if (homeScreenState.notificationsEnabled) Icons.Default.NotificationsActive else Icons.Default.NotificationsOff,
+                                        contentDescription = "Enable / Disable Notifications",
+                                        iconBackgroundColor = if (homeScreenState.notificationsEnabled) SigninColor else SignoutColor,
+                                        iconTint = Color.White
+                                    ) {
+                                        if (!homeScreenState.notificationsEnabled && !notificationPermissionGranted.status.isGranted) {
+                                            navigateToPermissionsScreen()
+                                        } else {
+                                            onNotificationsToggled()
+                                        }
+                                    }
+                                }
+                                if (BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE != "OAUTH") {
+                                    HomeScreenRow(
+                                        modifier = Modifier,
+                                        text = "Install github app on your account",
+                                        imageVector = Icons.Default.ArrowOutward,
+                                        contentDescription = "Sign out",
+                                        iconBackgroundColor = HomeIconTintColor,
+                                        iconTint = Color.White
+                                    ) {
+                                        openInstallationScreen()
+                                    }
+                                }
+                                HomeScreenRow(
+                                    modifier = Modifier,
+                                    text = "Sign out",
+                                    imageVector = Icons.AutoMirrored.Filled.Logout,
+                                    contentDescription = "Sign out",
+                                    bottomSpacer = false,
+                                    iconBackgroundColor = SignoutColor,
+                                    iconTint = Color.White
+                                ) {
+                                    onSignoutClicked {
+                                        withContext(Dispatchers.Default) {
+                                            CookieManager.getInstance().removeAllCookies(null);
+                                            CookieManager.getInstance().flush();
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    AnimatedVisibility(visible = homeScreenState == HomeViewModel.HomeState.LoggedOut) {
-                        HomeScreenRow(
-                            modifier = Modifier,
-                            text = "Login",
-                            imageVector = Icons.AutoMirrored.Filled.Login,
-                            contentDescription = "Login",
-                            bottomSpacer = false,
-                            iconBackgroundColor = SigninColor,
-                            iconTint = Color.White
-                        ) {
-                            onLoginClicked()
+                        AnimatedVisibility(visible = homeScreenState == HomeViewModel.HomeState.LoggedOut) {
+                            HomeScreenRow(
+                                modifier = Modifier,
+                                text = "Login",
+                                imageVector = Icons.AutoMirrored.Filled.Login,
+                                contentDescription = "Login",
+                                bottomSpacer = false,
+                                iconBackgroundColor = SigninColor,
+                                iconTint = Color.White
+                            ) {
+                                onLoginClicked()
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
 
 @Composable
 fun HomeScreenSpacer(modifier: Modifier) {
@@ -356,7 +438,11 @@ fun HomeScreenPreview() {
             homeScreenState = HomeViewModel.HomeState.LoggedOut,
             onSignoutClicked = {},
             onMyRepositoriesClicked = {},
-            onStarredRepositoriesClicked = {}
+            onStarredRepositoriesClicked = {},
+            onNotificationsToggled = {},
+            loggedInLoading = false,
+            navigateToPermissionsScreen = {},
+            openInstallationScreen = {}
         )
     }
 }
@@ -377,11 +463,16 @@ fun HomeScreenPreviewLoggedIn() {
                     type = RepoOwnerType.USER,
                     company = null,
                     serverId = ""
-                )
+                ),
+                notificationsEnabled = true
             ),
             onSignoutClicked = {},
             onMyRepositoriesClicked = {},
-            onStarredRepositoriesClicked = {}
+            onStarredRepositoriesClicked = {},
+            onNotificationsToggled = {},
+            loggedInLoading = false,
+            navigateToPermissionsScreen = {},
+            openInstallationScreen = {}
         )
     }
 }

@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import com.shyampatel.githubplayroom.BuildConfig
 import com.shyampatel.githubplayroom.screen.login.GithubWebViewRoute
 
 const val GITHUB_LOGIN_WEBVIEW = "github_login_webview"
@@ -14,6 +15,11 @@ fun NavGraphBuilder.githubLoginWebViewScreen(
     onFinish:(success: Boolean)->Unit
 ) {
     composable(route = GITHUB_LOGIN_WEBVIEW) {
-        GithubWebViewRoute(onFinish = onFinish)
+        if(BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE == "OAUTH")
+        {
+            com.shyampatel.githubplayroom.screen.login.oauth.GithubWebViewRoute(onFinish = onFinish)
+        } else {
+            GithubWebViewRoute(onFinish = onFinish)
+        }
     }
 }

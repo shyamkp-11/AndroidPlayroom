@@ -11,6 +11,11 @@ android {
         buildConfig = true
     }
     buildTypes {
+        all{
+            buildConfigField("String", "APP_SERVER_BASE_URL", "\"${properties["APP_SERVER_BASE_URL"]}\"")
+            buildConfigField("String", "APP_SERVER_TOKEN", "\"${properties["APP_SERVER_TOKEN"]}\"")
+
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

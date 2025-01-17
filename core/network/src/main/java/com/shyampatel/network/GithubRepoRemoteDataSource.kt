@@ -18,4 +18,29 @@ interface GithubRepoRemoteDataSource {
         owner: String,
         repo: String
     ): Flow<NetworkGithubRepoModel>
+
+    suspend fun appServerSignedInToApp(
+        fcmToken: String,
+        deviceId: String,
+        globalId: String,
+        userLogin: String,
+        firstName: String,
+        lastName: String,
+        email: String,
+    ): Boolean
+
+    suspend fun appServerSaveNotificationEnabled(
+        globalId: String,
+        deviceId: String,
+        fcmEnabled: Boolean,
+        fcmToken: String
+    ): Boolean
+
+    suspend fun appServerNotifySignOut(
+        globalId: String,
+        deviceId: String,
+        fcmToken: String
+    ): Boolean
+
+    suspend fun appServerSaveFcmToken(globalId: String, deviceId: String, fcmToken: String): Boolean
 }

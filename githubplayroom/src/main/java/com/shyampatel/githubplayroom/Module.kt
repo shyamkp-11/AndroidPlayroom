@@ -5,10 +5,17 @@ import com.shyampatel.githubplayroom.screen.login.GithubLoginViewModel
 import com.shyampatel.githubplayroom.screen.myrepo.MyRepositoriesViewModel
 import com.shyampatel.githubplayroom.screen.mystarredrepo.MyStarredViewModel
 import com.shyampatel.githubplayroom.screen.search.SearchReposViewModel
-import org.koin.androidx.viewmodel.dsl.viewModel
+import com.shyampatel.ui.permissions.PermissionsViewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 fun getAppModule() = module {
+    viewModel {
+        PermissionsViewModel(
+            permissionsRepository = get()
+        )
+    }
+
     viewModel {
         SearchReposViewModel(repository = get())
     }

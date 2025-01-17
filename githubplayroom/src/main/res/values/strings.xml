@@ -14,4 +14,8 @@
     <string name="public_repo">Public</string>
     <string name="private_repo">Private</string>
     <string name="load_error">loading error</string>
+
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="default_notification_channel_name" translatable="true">Github Star Channel</string>
+    <string name="waiting_for_authentication">Waiting for authentication...</string>
 </resources>

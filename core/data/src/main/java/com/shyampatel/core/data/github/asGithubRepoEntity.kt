@@ -10,13 +10,13 @@ import com.shyampatel.network.NetworkRepoOwner
 import java.util.Locale
 
 fun NetworkGithubRepoModel.asGithubRepoEntity() = GithubRepoEntity(
-    serverId = serverId.toString(),
+    serverId = serverId,
     name = name,
     fullName = fullName,
     stars = stars,
     htmlUrl = htmlUrl,
     private = private,
-    ownerId = owner.serverId.toString(),
+    ownerId = owner.serverId,
     ownerLogin = owner.login,
     ownerAvtarUrl = owner.avatarUrl,
     ownerType = enumValueOf<RepoOwnerType>(owner.type.uppercase(Locale.getDefault())),
@@ -35,7 +35,7 @@ fun GithubRepoModel.asRepoOwnerEntity() = RepoOwnerEntity (
 )
 
 fun NetworkGithubRepoModel.asRepoOwnerEntity() = RepoOwnerEntity(
-    serverId = owner.serverId.toString(),
+    serverId = owner.serverId,
     login = owner.login,
     htmlUrl = owner.htmlUrl,
     type =  enumValueOf<RepoOwnerType>(owner.type.uppercase(Locale.getDefault())),
@@ -45,7 +45,7 @@ fun NetworkGithubRepoModel.asRepoOwnerEntity() = RepoOwnerEntity(
 )
 
 fun NetworkRepoOwner.asRepoOwnerEntity() = RepoOwnerEntity(
-    serverId = serverId.toString(),
+    serverId = serverId,
     login = login,
     htmlUrl = htmlUrl,
     type =  enumValueOf<RepoOwnerType>(type.uppercase(Locale.getDefault())),

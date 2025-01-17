@@ -18,4 +18,5 @@ plugins {
     alias(libs.plugins.room) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.jetbrains.kotlin.android) apply false
+    alias(libs.plugins.gms.google.services) apply false
 }

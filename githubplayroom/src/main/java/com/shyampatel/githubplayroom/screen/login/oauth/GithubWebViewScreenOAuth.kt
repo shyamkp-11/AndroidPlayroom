@@ -1,4 +1,4 @@
-package com.shyampatel.githubplayroom.screen.login
+package com.shyampatel.githubplayroom.screen.login.oauth
 
 import android.util.Log
 import android.webkit.WebResourceRequest
@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.shyampatel.githubplayroom.BuildConfig
+import com.shyampatel.githubplayroom.screen.login.GithubLoginViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -22,8 +23,8 @@ internal fun GithubWebViewRoute(
 @Composable
 fun GithubWebViewScreen(modifier: Modifier, saveCode: (code: String, onSaveComplete:(token: String)->Unit, onError: (e: Exception) -> Unit)-> Unit, onFinish: (success: Boolean) -> Unit) {
 
-    val onlyAuthenticateUrl = "https://github.com/login/oauth/authorize?client_id=${BuildConfig.CLIENT_ID}"
-    val installAndAuthenticateUrl = "https://github.com/apps/${BuildConfig.APP_NAME}/installations/new"
+    val clientId = BuildConfig.CLIENT_ID
+    val onlyAuthenticateUrl = "https://github.com/login/oauth/authorize?client_id=${clientId}&scope=repo%20read:user"
     Scaffold { innerPadding ->
 
         AndroidView(
@@ -31,7 +32,7 @@ fun GithubWebViewScreen(modifier: Modifier, saveCode: (code: String, onSaveCompl
             factory = { context ->
                 WebView(context).apply {
                     settings.javaScriptEnabled = true
-                    webViewClient = CustomWebViewClient(saveCode, onFinish, onlyAuthenticateUrl)
+                    webViewClient = CustomWebViewClient(saveCode, onFinish, onlyAuthenticateUrl )
 
                     settings.loadWithOverviewMode = true
                     settings.useWideViewPort = true
@@ -39,7 +40,7 @@ fun GithubWebViewScreen(modifier: Modifier, saveCode: (code: String, onSaveCompl
                 }
             },
             update = { webView ->
-                webView.loadUrl(installAndAuthenticateUrl)
+                webView.loadUrl(onlyAuthenticateUrl)
             },
             onRelease = {}
         )
@@ -59,10 +60,10 @@ class CustomWebViewClient(val saveCode: (code: String, onSaveComplete:(token: St
             if (request.url.toString().contains("github.com/?code=") && !request.url.getQueryParameter("code").isNullOrEmpty()) {
                 saveCode(
                     request.url.getQueryParameter("code").toString()
-                , {
-                    onFinish(true)
-                },{
-                })
+                    , {
+                        onFinish(true)
+                    },{
+                    })
             }
         }
         return false

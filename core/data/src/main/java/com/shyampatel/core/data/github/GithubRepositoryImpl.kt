@@ -59,12 +59,28 @@ class GithubRepositoryImpl(
         }.flowOn(ioDispatcher)
     }
 
-    override suspend fun generateAccessToken(code: String) {
-        val token = remoteDataSource.generateUserAccessToken(code)
-        preferenceDao.saveUserAccessToken(token)
-        val owner = remoteDataSource.getAuthenticatedOwner(token)
-        withContext(ioDispatcher) {
+    override suspend fun generateAccessToken(code: String): String {
+        return withContext(ioDispatcher) {
+            val token = remoteDataSource.generateUserAccessToken(code)
+            preferenceDao.saveUserAccessToken(token)
+            val owner = remoteDataSource.getAuthenticatedOwner(token)
+            preferenceDao.getFCMToken().zip(preferenceDao.getFid()) { fcmToken, fid ->
+                runCatching {
+                remoteDataSource.appServerSignedInToApp(
+                    userLogin = owner.login,
+                    deviceId = fid!!,
+                    globalId = owner.serverId,
+                    fcmToken = fcmToken!!,
+                    firstName = owner.name ?: "",
+                    lastName = "",
+                    email = /*owner.email ?:*/ ""
+                ).let { fcmEnabled ->
+                    preferenceDao.saveNotificationEnabled(fcmEnabled)
+                }
+                    }
+            }.first()
             preferenceDao.saveAuthenticatedOwner(owner.asRepoOwnerEntity().asRepoOwner())
+            return@withContext token
         }
     }
 
@@ -73,9 +89,18 @@ class GithubRepositoryImpl(
             val token = preferenceDao.getUserAccessToken().first()
             if (token != null) {
                 try {
+                    val owner = preferenceDao.getAuthenticatedRepoOwner().first()!!
                     val isSuccessful = remoteDataSource.deleteUserAccessToken(token)
+                    preferenceDao.getFCMToken().zip(preferenceDao.getFid()) { fcmToken, fid ->
+                        remoteDataSource.appServerNotifySignOut(
+                            globalId = owner.serverId,
+                            deviceId = fid!!,
+                            fcmToken = fcmToken!!
+                        )
+                    }.first()
                     preferenceDao.clearAccessToken()
                     preferenceDao.clearAuthenticatedRepoOwner()
+                    preferenceDao.clearNotificationPreference()
                     githubRepoDataSource.deleteAllRepositories()
                     repoOwnerDataSource.deleteRepoOwnerData()
                     starredDataSource.deleteAllStarredData()
@@ -187,6 +212,78 @@ class GithubRepositoryImpl(
             Result.success(it)
         }.catch {
             emit(Result.failure(exception = it))
+        }
+    }
+
+    override suspend fun setNotificationEnabled(enabled: Boolean): Result<Unit> {
+        return withContext(ioDispatcher) {
+            try {
+                val owner = preferenceDao.getAuthenticatedRepoOwner().first()!!
+                val remoteSuccess = preferenceDao.getFCMToken().zip(preferenceDao.getFid()) { fcmToken, fid ->
+                    remoteDataSource.appServerSaveNotificationEnabled(
+                        globalId = owner.serverId,
+                        deviceId = fid!!,
+                        fcmEnabled = enabled,
+                        fcmToken = fcmToken!!
+                    )
+                }.first()
+                if (remoteSuccess) {
+                    preferenceDao.saveNotificationEnabled(enabled)
+                } else {
+                    return@withContext Result.failure(UnknownError())
+                }
+                return@withContext Result.success(Unit)
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+    }
+
+    override suspend fun saveFcmToken(token: String): Result<Unit> {
+        return withContext(ioDispatcher) {
+            try {
+                preferenceDao.saveFCMToken(token)
+                val owner = preferenceDao.getAuthenticatedRepoOwner().first()
+                if (owner != null) {
+                    remoteDataSource.appServerSaveFcmToken(
+                        globalId = owner.serverId,
+                        deviceId = preferenceDao.getFid().first()!!,
+                        fcmToken = token)
+                }
+                return@withContext Result.success(Unit)
+            } catch (e: Exception) {
+                return@withContext Result.failure(e)
+            }
+        }
+    }
+
+    override fun getFid(): Flow<Result<String>> {
+        return preferenceDao.getFid().map {
+            if (it != null) {
+                return@map Result.success(it)
+            } else {
+                return@map Result.failure(Exception("Fid is null"));
+            }
+        }.flowOn(ioDispatcher)
+    }
+
+    override suspend fun saveFid(fid: String): Result<Unit> {
+        return withContext(ioDispatcher) {
+            preferenceDao.saveFid(fid)
+            return@withContext Result.success(Unit)
+        }
+    }
+
+    override fun getAppId(token: String): Flow<Result<String>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getNotificationEnabled(): Flow<Result<Boolean>> {
+        return preferenceDao.getNotificationEnabled().map {
+            val enabled = it ?: false
+            Result.success(enabled)
+        }.flowOn(ioDispatcher).catch {
+            emit(Result.failure(it))
         }
     }
 

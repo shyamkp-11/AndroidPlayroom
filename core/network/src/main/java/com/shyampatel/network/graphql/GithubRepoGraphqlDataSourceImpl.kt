@@ -1,5 +1,7 @@
 package com.shyampatel.network.graphql
 
+import android.net.Uri
+import android.util.Log
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.Optional
 import com.apollographql.apollo.api.http.HttpHeader
@@ -8,13 +10,13 @@ import com.shyampatel.core.common.RepoOwnerType
 import com.shyampatel.core.network.BuildConfig
 import com.shyampatel.network.RetrofitGithubRepoNetworkApi
 import com.shyampatel.network.graphql.type.AddStarInput
-import com.shyampatel.network.graphql.type.User
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
-import okhttp3.internal.http2.Header
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import java.net.URLEncoder
 
 internal class GithubRepoGraphqlDataSourceImpl(
@@ -43,7 +45,7 @@ internal class GithubRepoGraphqlDataSourceImpl(
     override suspend fun deleteUserAccessToken(token: String): Boolean {
         return withContext(ioDispatcher) {
             val response =
-                networkApi.deleteAppAuthorization(requestBody = mapOf(Pair("access_token", token)))
+                networkApi.deleteAppToken(requestBody = mapOf(Pair("access_token", token)))
             response.code() == 204
         }
     }
@@ -116,8 +118,77 @@ internal class GithubRepoGraphqlDataSourceImpl(
         }.flowOn(ioDispatcher)
     }
 
+    override suspend fun appServerNotifySignOut(globalId: String, deviceId: String, fcmToken: String): Boolean {
+        return withContext(ioDispatcher) {
+            return@withContext networkApi.appServerNotifySignOut(
+                requestBody = mapOf(
+                    Pair("globalId", globalId),
+                    Pair("deviceId", deviceId),
+                    Pair("fcmToken", fcmToken)
+                ),
+                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
+            ).isSuccessful
+        }
+    }
+
+    override suspend fun appServerSaveFcmToken(
+        globalId: String,
+        deviceId: String,
+        fcmToken: String
+    ): Boolean {
+        return withContext(ioDispatcher) {
+            return@withContext networkApi.appServerUpdateFcmToken(
+                requestBody = buildJsonObject {
+                    put("globalId", globalId)
+                    put("deviceId", deviceId)
+                    put("fcmToken", fcmToken)
+                },
+                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
+            ).isSuccessful
+        }
+    }
+
+    override suspend fun appServerSaveNotificationEnabled(globalId: String, deviceId: String, fcmEnabled: Boolean, fcmToken: String): Boolean {
+        return withContext(ioDispatcher) {
+            return@withContext networkApi.appServerFcmEnabled(
+                requestBody = buildJsonObject {
+                    put("globalId", globalId)
+                    put("deviceId", deviceId)
+                    put("fcmEnabled", fcmEnabled)
+                    put("fcmToken", fcmToken)
+                },
+                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
+            ).isSuccessful
+        }
+    }
+    override suspend fun appServerSignedInToApp(
+        fcmToken: String,
+        deviceId: String,
+        globalId: String,
+        userLogin: String,
+        firstName: String,
+        lastName: String,
+        email: String
+    ): Boolean {
+        return withContext(ioDispatcher) {
+            val response = networkApi.appServerSignedInToApp(
+                requestBody = mapOf(
+                    Pair("fcmToken", fcmToken),
+                    Pair("deviceId", deviceId),
+                    Pair("globalId", globalId),
+                    Pair("username", userLogin),
+                    Pair("firstName", firstName),
+                    Pair("lastName", lastName),
+                ),
+                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
+            )
+            return@withContext response.body()?.fcmEnabled ?: throw Exception("appServerSignedInToApp response is $response")
+        }
+    }
+
     override fun searchRepositories(token: String?, searchQuery: String): Flow<List<GithubRepoModel>> {
-        val encodedQuery = URLEncoder.encode(searchQuery, Charsets.UTF_8.name())
+        val encodedQuery = Uri.encode(searchQuery)
+        Log.d("GithubRepoGraphqlDataSource", "searchRepositories: $encodedQuery")
         return flow {
             val header = if (token != null) HttpHeader("Authorization", "Bearer $token") else null
             val response = apolloClient.query(SearchRepositoriesQuery(encodedQuery, Optional.present(25), Optional.absent())).run {
