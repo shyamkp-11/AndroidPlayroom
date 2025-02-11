@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
@@ -78,6 +79,15 @@ class GithubRepositoryImpl(
                 company = owner.company
             ))
             return@withContext token
+        }
+    }
+
+    override suspend fun getAppInstallations(token: String): Result<Unit> {
+        return preferenceDao.getAuthenticatedRepoOwner().first().let {
+            remoteDataSource.getAppInstallationForUser(
+                    token = token,
+                    userLogin = it!!.login
+            )
         }
     }
 
@@ -284,10 +294,6 @@ class GithubRepositoryImpl(
             preferenceDao.saveFid(fid)
             return@withContext Result.success(Unit)
         }
-    }
-
-    override fun getAppId(token: String): Flow<Result<String>> {
-        TODO("Not yet implemented")
     }
 
     override fun getRepo(owner: String, repo: String): Flow<Result<GithubRepoModel>> {

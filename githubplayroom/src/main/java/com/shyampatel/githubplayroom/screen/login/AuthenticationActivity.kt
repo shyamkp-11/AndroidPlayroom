@@ -36,6 +36,7 @@ class AuthenticationActivity : AppCompatActivity() {
     private var onNewIntentProcessing = false
     private var sessionEnded = false
     private var startDismissTimer = false
+    private var oauthAppAuthenticated = false
 
     private val mConnection: CustomTabsServiceConnection = object : CustomTabsServiceConnection() {
         override fun onCustomTabsServiceConnected( name: ComponentName, client: CustomTabsClient
@@ -91,13 +92,20 @@ class AuthenticationActivity : AppCompatActivity() {
 
         bindCustomTabService(this)
 
-        val authorizationUrl = if (BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE == "OAUTH") {
-                "https://github.com/login/oauth/authorize?client_id=${BuildConfig.CLIENT_ID}&redirect_uri=auth://callback&scope=repo%20user:read"
-        } else {
-//                        "https://github.com/apps/${BuildConfig.APP_NAME}/installations/new"
-            "https://github.com/login/oauth/authorize?client_id=${BuildConfig.CLIENT_ID}&redirect_uri=auth://callback"
-        }
+        val authorizationUrl = "https://github.com/login/oauth/authorize?client_id=${BuildConfig.CLIENT_ID_OAUTH_APP}&redirect_uri=auth://callback&scope=repo%20user:read"
+//            "https://github.com/login/oauth/authorize?client_id=${BuildConfig.OAUTH_APP_CLIENT_ID}&redirect_uri=auth://callback"
+        launchUrl(authorizationUrl)
+        /* customTabsIntent.intent.setPackage(chromePackageName)
+         customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
+         customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+         customTabsIntent.intent.putExtra(
+             "org.chromium.chrome.browser.customtabs.EXTRA_DISABLE_STAR_BUTTON",
+             true
+         );*/
 
+    }
+
+    private fun launchUrl(authorizationUrl: String) {
         val intentBuilder = CustomTabsIntent.Builder(customTabsSession)
         intentBuilder.setExitAnimations(
             this@AuthenticationActivity,
@@ -114,17 +122,6 @@ class AuthenticationActivity : AppCompatActivity() {
         intent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
         intent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         intent.launchUrl(this, Uri.parse(authorizationUrl));
-
-
-
-        /* customTabsIntent.intent.setPackage(chromePackageName)
-         customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY)
-         customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-         customTabsIntent.intent.putExtra(
-             "org.chromium.chrome.browser.customtabs.EXTRA_DISABLE_STAR_BUTTON",
-             true
-         );*/
-
     }
 
     private fun bindCustomTabService(context: Context) {
@@ -146,23 +143,40 @@ class AuthenticationActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         Log.d("AuthenticationActivity", "onNewIntent:")
-        onNewIntentProcessing = true
         val code = intent.data?.getQueryParameter("code")
-
-        if (!code.isNullOrEmpty()) {
-            viewModel.generateToken(code = code, {
-                Log.d("AuthenticationActivity", "token: $it")
-                setResult(RESULT_OK, Intent().apply { putExtra(Companion.KEY_TOKEN, it) })
-                finish()
-            }, {
-                Log.d("AuthenticationActivity", "exception: $it")
+        onNewIntentProcessing = true
+        if (!oauthAppAuthenticated) {
+            if (!code.isNullOrEmpty()) {
+                viewModel.generateToken(code = code, {
+                    oauthAppAuthenticated = true
+                    Log.d("AuthenticationActivity", "token: $it")
+                    viewModel.hasUserInstalledTheApp { isInstalled ->
+                        onNewIntentProcessing = false
+                        if (isInstalled) {
+                            setResult(RESULT_OK, Intent().apply { putExtra(KEY_TOKEN, it) })
+                            finish()
+                        } else {
+                            launchUrl("https://github.com/apps/${BuildConfig.APP_NAME_GITHUBAPP}/installations/new")
+                        }
+                    }
+                }, {
+                    Log.d("AuthenticationActivity", "exception: $it")
+                    setResult(RESULT_CANCELED)
+                    finish()
+                })
+            } else {
+                Log.d("AuthenticationActivity", "user cancelled: code is null")
                 setResult(RESULT_CANCELED)
                 finish()
-            })
+            }
         } else {
-            Log.d("AuthenticationActivity", "user cancelled: code is null")
-            setResult(RESULT_CANCELED)
-            finish()
+            if (!code.isNullOrEmpty()) {
+                setResult(RESULT_OK)
+                finish()
+            } else {
+                setResult(RESULT_CANCELED)
+                finish()
+            }
         }
     }
 

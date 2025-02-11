@@ -91,7 +91,7 @@ class InstallationActivity : AppCompatActivity() {
 
         bindCustomTabService(this)
 
-        val authorizationUrl = "https://github.com/apps/${BuildConfig.APP_NAME}/installations/new"
+        val authorizationUrl = "https://github.com/apps/${BuildConfig.APP_NAME_GITHUBAPP}/installations/new"
 
         val intentBuilder = CustomTabsIntent.Builder(customTabsSession)
         intentBuilder.setExitAnimations(

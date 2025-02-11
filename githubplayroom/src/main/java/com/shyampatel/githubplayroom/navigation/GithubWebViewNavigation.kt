@@ -15,7 +15,7 @@ fun NavGraphBuilder.githubLoginWebViewScreen(
     onFinish:(success: Boolean)->Unit
 ) {
     composable(route = GITHUB_LOGIN_WEBVIEW) {
-        if(BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE == "OAUTH")
+        if(true)
         {
             com.shyampatel.githubplayroom.screen.login.oauth.GithubWebViewRoute(onFinish = onFinish)
         } else {

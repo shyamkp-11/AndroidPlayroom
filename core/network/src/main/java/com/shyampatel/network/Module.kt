@@ -6,7 +6,6 @@ import coil.decode.SvgDecoder
 import coil.util.DebugLogger
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.network.okHttpCallFactory
-import com.apollographql.apollo.network.okHttpClient
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.shyampatel.core.network.BuildConfig
 import com.shyampatel.network.graphql.GithubRepoGraphqlDataSource
@@ -20,7 +19,13 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
-fun getNetworkModule(applicationContext: Context, baseUrl: String, graphqlBaseUrl: String, ioDispatcher: CoroutineDispatcher) = module {
+fun getNetworkModule(
+    applicationContext: Context,
+    baseUrl: String,
+    graphqlBaseUrl: String,
+    appServerBaseUrl: String,
+    ioDispatcher: CoroutineDispatcher
+) = module {
     single<Call.Factory> {
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().also {
@@ -46,7 +51,7 @@ fun getNetworkModule(applicationContext: Context, baseUrl: String, graphqlBaseUr
             // From NowInAndroidApp "We use callFactory lambda here with dagger.Lazy<Call.Factory>
             // to prevent initializing OkHttp on the main thread".
             //    .callFactory { okhttpCallFactory.get().newCall(it) }
-            .callFactory{
+            .callFactory {
                 get<Call.Factory>().newCall(it)
             }
             .addConverterFactory(get<Json>().asConverterFactory("application/json".toMediaType()))
@@ -62,12 +67,13 @@ fun getNetworkModule(applicationContext: Context, baseUrl: String, graphqlBaseUr
         }
     }
 
-    single<GithubRepoRemoteDataSource> {
-        GithubRepoRetrofitDataSource(
-            networkApi = get(),
-            ioDispatcher = ioDispatcher
+    single {
+        GithubRepoRetrofitDataSourceHelper(
+            networkApi = get<RetrofitGithubRepoNetworkApi>(),
+            appServerBaseUrl = appServerBaseUrl,
         )
     }
+
     single<GithubRepoGraphqlDataSource> {
         GithubRepoGraphqlDataSourceImpl(
             apolloClient = get(),

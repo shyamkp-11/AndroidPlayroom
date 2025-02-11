@@ -22,5 +22,5 @@ interface GithubRepository {
     suspend fun saveFcmToken(token: String): Result<Unit>
     fun getFid(): Flow<Result<String>>
     suspend fun saveFid(fid: String): Result<Unit>
-    fun getAppId(token: String): Flow<Result<String>>
+    suspend fun getAppInstallations(token: String): Result<Unit>
 }

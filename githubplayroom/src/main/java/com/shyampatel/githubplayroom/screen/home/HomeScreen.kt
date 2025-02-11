@@ -70,7 +70,6 @@ import com.shyampatel.ui.AndroidPlayroomTopAppBar
 import com.shyampatel.githubplayroom.R
 import com.shyampatel.githubplayroom.screen.login.AuthenticationActivity
 import com.shyampatel.githubplayroom.screen.login.AuthenticationActivity.Companion.KEY_TOKEN
-import com.shyampatel.githubplayroom.screen.login.InstallationActivity
 import com.shyampatel.ui.theme.AndroidPlayroomTheme
 import com.shyampatel.ui.theme.HomeIconTintColor
 import com.shyampatel.ui.theme.SigninColor
@@ -128,9 +127,6 @@ internal fun HomeScreenRoute(
         onNotificationsToggled = homeViewModel::toggleNotifications,
         loggedInLoading = loggedInLoading,
         navigateToPermissionsScreen = navigateToPermissionsScreen,
-        openInstallationScreen = {
-            launcher.launch(Intent(context, InstallationActivity::class.java))
-        }
     )
 }
 
@@ -147,7 +143,6 @@ fun HomeScreen(
     onMyRepositoriesClicked: () -> Unit,
     loggedInLoading: Boolean,
     navigateToPermissionsScreen: () -> Unit,
-    openInstallationScreen: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -241,7 +236,7 @@ fun HomeScreen(
                                 ) {
                                     onStarredRepositoriesClicked()
                                 }
-                                if (BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE != "OAUTH" && homeScreenState is HomeViewModel.HomeState.LoggedIn) {
+                                if (homeScreenState is HomeViewModel.HomeState.LoggedIn) {
                                     HomeScreenRow(
                                         modifier = Modifier,
                                         text = if (homeScreenState.notificationsEnabled) "Notifications On" else "Notifications Off",
@@ -255,18 +250,6 @@ fun HomeScreen(
                                         } else {
                                             onNotificationsToggled()
                                         }
-                                    }
-                                }
-                                if (BuildConfig.GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE != "OAUTH") {
-                                    HomeScreenRow(
-                                        modifier = Modifier,
-                                        text = "Install github app on your account",
-                                        imageVector = Icons.Default.ArrowOutward,
-                                        contentDescription = "Sign out",
-                                        iconBackgroundColor = HomeIconTintColor,
-                                        iconTint = Color.White
-                                    ) {
-                                        openInstallationScreen()
                                     }
                                 }
                                 HomeScreenRow(
@@ -442,7 +425,6 @@ fun HomeScreenPreview() {
             onNotificationsToggled = {},
             loggedInLoading = false,
             navigateToPermissionsScreen = {},
-            openInstallationScreen = {}
         )
     }
 }
@@ -472,7 +454,6 @@ fun HomeScreenPreviewLoggedIn() {
             onNotificationsToggled = {},
             loggedInLoading = false,
             navigateToPermissionsScreen = {},
-            openInstallationScreen = {}
         )
     }
 }

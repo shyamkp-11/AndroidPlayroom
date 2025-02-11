@@ -40,8 +40,9 @@ class GithubPlayroomApplication : Application(), ImageLoaderFactory {
                     }
                 },
                 getDataModule(
-                    baseUrl = "https://api.github.com",
-                    graphqlBaseUrl = "https://api.github.com/graphql",
+                    baseUrl = BuildConfig.GITHUB_BASE_URL,
+                    graphqlBaseUrl = BuildConfig.GITHUB_BASE_URL_GRAPHQL,
+                    appServerBaseUrl = BuildConfig.APP_SERVER_BASE_URL,
                     applicationContext = applicationContext,
                     defaultDispatcher = Dispatchers.Default,
                     ioDispatcher = Dispatchers.IO

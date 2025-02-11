@@ -14,9 +14,6 @@ android {
     }
 
     buildTypes {
-        all{
-            buildConfigField("String", "githubplayroom_api_mode", "\"${properties["GITHUBPLAYROOM_API_MODE"]}\"")
-        }
         release {
             isMinifyEnabled = false
             proguardFiles(

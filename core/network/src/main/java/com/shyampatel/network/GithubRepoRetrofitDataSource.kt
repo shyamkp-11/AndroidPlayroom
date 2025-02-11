@@ -1,17 +1,7 @@
 package com.shyampatel.network
 
 import com.shyampatel.core.network.BuildConfig
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonObject
 import okhttp3.Credentials
 import retrofit2.Response
 import retrofit2.http.Body
@@ -20,16 +10,13 @@ import retrofit2.http.GET
 import retrofit2.http.HTTP
 import retrofit2.http.Header
 import retrofit2.http.Headers
-import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
-import java.net.URLEncoder
 
 internal interface RetrofitGithubRepoNetworkApi {
-
 
     @Headers("Accept: application/json",
         "X-Github-Next-Global-ID: 1")
@@ -47,20 +34,20 @@ internal interface RetrofitGithubRepoNetworkApi {
     @HTTP(method = "DELETE", path = "/applications/{client_id}/token", hasBody = true)
     suspend fun deleteAppToken(
         @Header("Authorization") credentials: String = Credentials.basic(
-            BuildConfig.CLIENT_ID,
-            BuildConfig.CLIENT_SECRET
+            BuildConfig.CLIENT_ID_OAUTH_APP,
+            BuildConfig.CLIENT_SECRET_OAUTH_APP
         ),
-        @Path("client_id") clientId: String = BuildConfig.CLIENT_ID,
+        @Path("client_id") clientId: String = BuildConfig.CLIENT_ID_OAUTH_APP,
         @Body requestBody: Map<String, String>
     ): Response<Unit>
 
     @HTTP(method = "DELETE", path = "/applications/{client_id}/grant", hasBody = true)
     suspend fun deleteAppAuthorization(
         @Header("Authorization") credentials: String = Credentials.basic(
-            BuildConfig.CLIENT_ID,
-            BuildConfig.CLIENT_SECRET
+            BuildConfig.CLIENT_ID_OAUTH_APP,
+            BuildConfig.CLIENT_SECRET_OAUTH_APP
         ),
-        @Path("client_id") clientId: String = BuildConfig.CLIENT_ID,
+        @Path("client_id") clientId: String = BuildConfig.CLIENT_ID_OAUTH_APP,
         @Body requestBody: Map<String, String>
     ): Response<Unit>
 
@@ -68,10 +55,17 @@ internal interface RetrofitGithubRepoNetworkApi {
     @POST
     suspend fun generateUserAccessToken(
         @Url url: String = "https://github.com/login/oauth/access_token",
-        @Query("client_secret") clientSecret: String = BuildConfig.CLIENT_SECRET,
+        @Query("client_secret") clientSecret: String = BuildConfig.CLIENT_SECRET_OAUTH_APP,
         @Query("code") code: String,
-        @Query("client_id") clientId: String = BuildConfig.CLIENT_ID,
+        @Query("client_id") clientId: String = BuildConfig.CLIENT_ID_OAUTH_APP,
     ): Response<NetworkAccessTokenModel>
+
+    @Headers("X-Github-Next-Global-ID: 1")
+    @GET("/users/{username}/installation")
+    suspend fun getAppInstallationForUser(
+        @Header("Authorization") jwtToken: String,
+        @Path("username") username: String,
+    ): Response<Unit>
 
     @Headers("X-Github-Next-Global-ID: 1")
     @GET(value = "/user")
@@ -111,202 +105,151 @@ internal interface RetrofitGithubRepoNetworkApi {
 
     @POST
     suspend fun appServerSignedInToApp(
-        @Url url: String = "${BuildConfig.APP_SERVER_BASE_URL}/api/v1/githubUsers/signedInToApp",
+        @Url url: String,
         @Header("Authorization") token: String,
         @Body requestBody: Map<String, String>
     ): Response<NetworkFcmEnabled>
 
     @PUT
     suspend fun appServerFcmEnabled(
-        @Url url: String = "${BuildConfig.APP_SERVER_BASE_URL}/api/v1/githubUsers/fcmEnabled",
+        @Url url: String,
         @Header("Authorization") token: String,
         @Body requestBody: JsonObject,
     ): Response<Unit>
 
     @POST
     suspend fun appServerNotifySignOut(
-        @Url url: String = "${BuildConfig.APP_SERVER_BASE_URL}/api/v1/githubUsers/signout",
+        @Url url: String,
         @Header("Authorization") token: String,
         @Body requestBody: Map<String, String>
     ): Response<Unit>
 
     @PUT
     suspend fun appServerUpdateFcmToken(
-        @Url url: String = "${BuildConfig.APP_SERVER_BASE_URL}/api/v1/githubUsers/fcmToken",
+        @Url url: String,
         @Header("Authorization") token: String,
         @Body requestBody: JsonObject,
     ): Response<Unit>
-
 }
 
-internal class GithubRepoRetrofitDataSource(
-    private val networkApi: RetrofitGithubRepoNetworkApi,
-    private val ioDispatcher: CoroutineDispatcher
-) : GithubRepoRemoteDataSource {
-
-    override fun getMaxStarsGithubRepo(): Flow<List<NetworkGithubRepoModel>> {
-        return flow {
-            emit(networkApi.getMaxStartsGithubRepo().body()!!.items)
-        }.flowOn(ioDispatcher)
+/**
+ * Find a better way to inject different base urls.
+ */
+internal class GithubRepoRetrofitDataSourceHelper(private val networkApi: RetrofitGithubRepoNetworkApi, private val appServerBaseUrl: String): RetrofitGithubRepoNetworkApi {
+    override suspend fun getMaxStartsGithubRepo(): Response<NetworkGithubRepoWrapper> {
+        return networkApi.getMaxStartsGithubRepo()
     }
 
-    override fun getGithubRepo(
+    override suspend fun getGithubRepo(
         token: String?,
         owner: String,
         repo: String
-    ): Flow<NetworkGithubRepoModel> {
-        return flow {
-            emit(
-                networkApi.getGithubRepo(
-                    token = token,
-                    owner = owner,
-                    repo = repo
-                ).body()!!
-            )
-        }.flowOn(ioDispatcher)
+    ): Response<NetworkGithubRepoModel> {
+        return networkApi.getGithubRepo(token, owner, repo)
     }
 
-    override suspend fun appServerNotifySignOut(
-        globalId: String,
-        deviceId: String,
-        fcmToken: String
-    ): Boolean {
-        return withContext(ioDispatcher) {
-            return@withContext networkApi.appServerNotifySignOut(
-                requestBody = mapOf(
-                    Pair("globalId", globalId),
-                    Pair("deviceId", deviceId),
-                    Pair("fcmToken", fcmToken)
-                ),
-                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
-            ).isSuccessful
-        }
+    override suspend fun deleteAppToken(
+        credentials: String,
+        clientId: String,
+        requestBody: Map<String, String>
+    ): Response<Unit> {
+        return networkApi.deleteAppToken(credentials, clientId, requestBody)
     }
 
-    override suspend fun appServerSaveFcmToken(
-        globalId: String,
-        deviceId: String,
-        fcmToken: String
-    ): Boolean {
-        return withContext(ioDispatcher) {
-            return@withContext networkApi.appServerUpdateFcmToken(
-                requestBody = buildJsonObject {
-                    put("globalId", globalId)
-                    put("deviceId", deviceId)
-                    put("fcmToken", fcmToken)
-                },
-                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
-            ).isSuccessful
-        }
+    override suspend fun deleteAppAuthorization(
+        credentials: String,
+        clientId: String,
+        requestBody: Map<String, String>
+    ): Response<Unit> {
+        return networkApi.deleteAppAuthorization(credentials, clientId, requestBody)
     }
 
-    override suspend fun appServerSaveNotificationEnabled(globalId: String, deviceId: String, fcmEnabled: Boolean, fcmToken: String): Boolean {
-        return withContext(ioDispatcher) {
-            return@withContext networkApi.appServerFcmEnabled(
-                requestBody =buildJsonObject {
-                    put("globalId", globalId)
-                    put("deviceId", deviceId)
-                    put("fcmEnabled", fcmEnabled)
-                    put("fcmToken", fcmToken)
-                },
-                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
-            ).isSuccessful
-        }
+    override suspend fun generateUserAccessToken(
+        url: String,
+        clientSecret: String,
+        code: String,
+        clientId: String
+    ): Response<NetworkAccessTokenModel> {
+        return networkApi.generateUserAccessToken(url, clientSecret, code, clientId)
+    }
+
+    override suspend fun getAppInstallationForUser(
+        jwtToken: String,
+        username: String
+    ): Response<Unit> {
+        return networkApi.getAppInstallationForUser(jwtToken, username)
+    }
+
+    override suspend fun getAuthenticatedOwner(token: String): Response<NetworkRepoOwner> {
+        return networkApi.getAuthenticatedOwner(token)
+    }
+
+    override suspend fun getMyRepositories(token: String): Response<List<NetworkGithubRepoModel>> {
+        return networkApi.getMyRepositories(token)
+    }
+
+    override suspend fun searchRepositories(
+        queryString: String,
+        sort: String,
+        order: String,
+        perPage: Int
+    ): Response<NetworkGithubRepoWrapper> {
+        return networkApi.searchRepositories(queryString, sort, order, perPage)
+    }
+
+    override suspend fun starRepository(
+        token: String,
+        owner: String,
+        repo: String
+    ): Response<Unit> {
+        return networkApi.starRepository(token, owner, repo)
+    }
+
+    override suspend fun unstarRepository(
+        token: String,
+        owner: String,
+        repo: String
+    ): Response<Unit> {
+        return networkApi.unstarRepository(token, owner, repo)
+    }
+
+    override suspend fun getStarredRepositories(token: String): Response<List<NetworkGithubRepoModel>> {
+        return networkApi.getStarredRepositories(token)
     }
 
     override suspend fun appServerSignedInToApp(
-        fcmToken: String,
-        deviceId: String,
-        globalId: String,
-        userLogin: String,
-        firstName: String,
-        lastName: String,
-        email: String
-    ): Boolean {
-        return withContext(ioDispatcher) {
-            val response = networkApi.appServerSignedInToApp(
-                requestBody = mapOf(
-                    Pair("fcmToken", fcmToken),
-                    Pair("deviceId", deviceId),
-                    Pair("globalId", globalId),
-                    Pair("username", userLogin),
-                    Pair("firstName", firstName),
-                    Pair("lastName", lastName),
-                ),
-                token = "Bearer ${BuildConfig.APP_SERVER_TOKEN}",
-            )
-            return@withContext response.body()?.fcmEnabled ?: throw Exception("appServerSignedInToApp response is $response")
-        }
+        url: String,
+        token: String,
+        requestBody: Map<String, String>
+    ): Response<NetworkFcmEnabled> {
+        val newUrl = "$appServerBaseUrl/api/v1/githubUsers/signedInToApp"
+        return networkApi.appServerSignedInToApp(newUrl, token, requestBody)
     }
 
-    override suspend fun deleteUserAccessToken(token: String): Boolean {
-        return withContext(ioDispatcher) {
-            val response =
-                networkApi.deleteAppToken(requestBody = mapOf(Pair("access_token", token)))
-            response.code() == 204
-        }
+    override suspend fun appServerFcmEnabled(
+        url: String,
+        token: String,
+        requestBody: JsonObject
+    ): Response<Unit> {
+        val newUrl = "$appServerBaseUrl/api/v1/githubUsers/fcmEnabled"
+        return networkApi.appServerFcmEnabled(newUrl, token, requestBody)
     }
 
-    override suspend fun getAuthenticatedOwner(token: String): NetworkRepoOwner {
-        return withContext(ioDispatcher) {
-            val response = networkApi.getAuthenticatedOwner(token = "Bearer $token")
-            if (response.isSuccessful) {
-                response.body()!!
-            } else throw Exception(
-                "Api response code: ${response.code()}. Error body:${
-                    response.errorBody()?.string()
-                }"
-            )
-        }
+    override suspend fun appServerNotifySignOut(
+        url: String,
+        token: String,
+        requestBody: Map<String, String>
+    ): Response<Unit> {
+        val newUrl = "$appServerBaseUrl/api/v1/githubUsers/signout"
+        return networkApi.appServerNotifySignOut(newUrl, token, requestBody)
     }
 
-    override suspend fun generateUserAccessToken(code: String): String {
-        return withContext(ioDispatcher) {
-            val clientId = BuildConfig.CLIENT_ID
-            val clientSecret = BuildConfig.CLIENT_SECRET
-            val result = networkApi.generateUserAccessToken(
-                clientId = clientId,
-                code = code,
-                clientSecret = clientSecret
-            )
-            if (result.isSuccessful) result.body()!!.accessToken else throw Exception(
-                "Response code " + result.code() + ". Error:" + result.errorBody()?.string()
-            )
-        }
-    }
-
-    override fun getMyRepositories(token: String): Flow<List<NetworkGithubRepoModel>> {
-        return flow {
-            emit(networkApi.getMyRepositories(token = "Bearer $token").body()!!)
-        }.flowOn(ioDispatcher)
-    }
-
-    override fun getMyStarredRepositories(token: String): Flow<List<NetworkGithubRepoModel>> {
-        return flow {
-            emit(networkApi.getStarredRepositories(token = "Bearer $token").body()!!)
-        }.flowOn(ioDispatcher)
-    }
-
-    override fun searchRepositories(searchQuery: String): Flow<List<NetworkGithubRepoModel>> {
-        val encodedQuery = URLEncoder.encode(searchQuery, Charsets.UTF_8.name())
-        return flow {
-            emit(networkApi.searchRepositories(encodedQuery).body()!!.items)
-        }.flowOn(ioDispatcher)
-    }
-
-    override suspend fun starRepository(token: String, owner: String, repo: String): Boolean {
-        return withContext(ioDispatcher) {
-            val response =
-                networkApi.starRepository(owner = owner, repo = repo, token = "Bearer $token")
-            response.code() == 204
-        }
-    }
-
-    override suspend fun unstarRepository(token: String, owner: String, repo: String): Boolean {
-        return withContext(ioDispatcher) {
-            val response =
-                networkApi.unstarRepository(owner = owner, repo = repo, token = "Bearer $token")
-            response.code() == 204
-        }
+    override suspend fun appServerUpdateFcmToken(
+        url: String,
+        token: String,
+        requestBody: JsonObject
+    ): Response<Unit> {
+        val newUrl = "$appServerBaseUrl/api/v1/githubUsers/fcmToken"
+        return networkApi.appServerUpdateFcmToken(newUrl, token, requestBody)
     }
 }

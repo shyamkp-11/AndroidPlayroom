@@ -23,24 +23,49 @@ android {
         all {
             buildConfigField(
                 "String",
-                "GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE",
-                "\"${properties["GITHUBPLAYROOM_GITHUB_SERVER_APP_MODE"]}\""
+                "APP_NAME_GITHUBAPP",
+                "\"${properties["APP_NAME_GITHUBAPP"]}\""
+            )
+            buildConfigField(
+                "String",
+                "GITHUB_BASE_URL",
+                "\"${properties["GITHUB_BASE_URL"]}\""
+            )
+            buildConfigField(
+                "String",
+                "GITHUB_BASE_URL_GRAPHQL",
+                "\"${properties["GITHUB_BASE_URL_GRAPHQL"]}\""
+            )
+            buildConfigField(
+                "String",
+                "APP_SERVER_BASE_URL",
+                "\"${properties["APP_SERVER_BASE_URL"]}\""
             )
             buildConfigField(
                 "String",
                 "WEB_AUTHENTICATION_MODE",
                 "\"${properties["WEB_AUTHENTICATION_MODE"]}\""
             )
+            val file = project.file("githubplayroom_private_pkcs8.pem")
+            val key = file.readText()
+                .replace("-----BEGIN PRIVATE KEY-----", "")
+                .replace("-----END PRIVATE KEY-----", "")
+                .replace(System.lineSeparator(), "")
+            buildConfigField(
+                "String",
+                "JWT_KEY",
+                "\"$key\""
+            )
         }
         release {
             isMinifyEnabled = false
             proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
             )
         }
     }
-    namespace =  "com.shyampatel.githubplayroom"
+    namespace = "com.shyampatel.githubplayroom"
 }
 
 dependencies {

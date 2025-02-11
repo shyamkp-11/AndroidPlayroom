@@ -51,4 +51,6 @@ interface GithubRepoGraphqlDataSource {
     ): Boolean
 
     suspend fun appServerSaveFcmToken(globalId: String, deviceId: String, fcmToken: String): Boolean
+
+    suspend fun getAppInstallationForUser(token: String, userLogin: String): Result<Unit>
 }

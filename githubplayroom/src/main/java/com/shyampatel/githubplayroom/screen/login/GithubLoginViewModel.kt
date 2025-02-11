@@ -10,9 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import java.util.Date
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 class GithubLoginViewModel(
@@ -35,17 +33,28 @@ class GithubLoginViewModel(
         }
     }
 
-    fun getAppId() {
+    fun hasUserInstalledTheApp(onComplete: (success: Boolean)-> Unit) {
         viewModelScope.launch {
-            val appId  = repository.getAppId(
-                token = generateJwtTokenRsa(
-                    issuedAt = Date(Clock.System.now().toEpochMilliseconds()),
-                    key = BuildConfig.CLIENT_SECRET,
-                    expiry = Date(Clock.System.now().plus(10.minutes).toEpochMilliseconds()),
-                    issuer = BuildConfig.CLIENT_GITHUBAPP_ID,
-                ),
-            )
-            withContext(Dispatchers.Main) {
+            try {
+                val issuedAt = Date(Clock.System.now().toEpochMilliseconds())
+                val expiredAt = Date(Clock.System.now().plus(9.minutes).toEpochMilliseconds())
+                val result = repository.getAppInstallations(
+                    token = generateJwtTokenRsa(
+                        issuedAt = issuedAt,
+                        key = BuildConfig.JWT_KEY,
+                        expiry = expiredAt,
+                        issuer = BuildConfig.CLIENT_ID_GITHUBAPP,
+                    )
+                )
+                Log.d(GithubLoginViewModel::class.simpleName, "getAppId: $result")
+                withContext(Dispatchers.Main) {
+                    onComplete(result.isSuccess)
+                }
+            } catch (e: Exception) {
+                Log.e(GithubLoginViewModel::class.simpleName, e.stackTraceToString())
+                withContext(Dispatchers.Main) {
+                    onComplete(false)
+                }
             }
         }
     }
