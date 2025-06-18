@@ -222,7 +222,7 @@ internal class GithubRepoGraphqlDataSourceImpl(
         token: String?,
         searchQuery: String
     ): Flow<List<GithubRepoModel>> {
-        val encodedQuery = Uri.encode(searchQuery)
+        val encodedQuery = searchQuery
         return flow {
             val header = if (token != null) HttpHeader("Authorization", "Bearer $token") else null
             val response = apolloClient.query(

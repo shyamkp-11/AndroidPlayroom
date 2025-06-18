@@ -43,7 +43,8 @@ fun NavGraphBuilder.permissionsScreenNotification(
                     onGranted()
                 },
                 title = "Allow Notifications",
-                description = "Allow Geofence App to notify you when a geofence event occurs",
+                description = "Allow Github Playroom App to notify you when a user stars your repository.",
+                nextText = "Next",
                 cancelText = "Not Now",
                 onCancelButtonClicked = {
                     onCancelButtonClicked()

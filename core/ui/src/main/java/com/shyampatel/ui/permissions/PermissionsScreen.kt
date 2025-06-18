@@ -24,8 +24,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,8 +38,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.shyampatel.ui.R
 import org.koin.androidx.compose.koinViewModel
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PermissionsScreen(
     modifier: Modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
@@ -46,8 +53,8 @@ fun PermissionsScreen(
     permissions: Set<String>,
     openSettingsIntent: Intent? = null,
     requiredPermissions: Set<String> = permissions,
-    nextText: String = "Next",
-    settingsText: String = "Open Settings",
+    nextText: String = stringResource(R.string.core_ui_next),
+    settingsText: String = stringResource(R.string.core_ui_open_settings),
     cancelText: String? = null,
     onCancelButtonClicked: (() -> Unit)? = null,
     permissionsViewModel: PermissionsViewModel = koinViewModel()
@@ -55,7 +62,7 @@ fun PermissionsScreen(
     val permissionsMap by permissionsViewModel.permissionsMap.collectAsStateWithLifecycle()
     Scaffold(
     ) { innerPadding ->
-        Box(modifier = modifier.padding(top = innerPadding.calculateTopPadding())) {
+        Box(modifier = modifier.padding(top = innerPadding.calculateTopPadding()).semantics { testTagsAsResourceId = true }) {
             PermissionsScreen(
                 modifier = Modifier,
                 title = title,
@@ -77,9 +84,10 @@ fun PermissionsScreen(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun PermissionsScreen(
-    modifier: Modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp),
+    modifier: Modifier = Modifier.padding(vertical = 32.dp, horizontal = 16.dp).semantics { testTagsAsResourceId = true },
     title: String,
     description: String?,
     requiredTitle: String? = null,
@@ -87,11 +95,11 @@ fun PermissionsScreen(
     permissions: Set<String>,
     openSettingsIntent: Intent? = null,
     requiredPermissions: Set<String> = permissions,
-    nextText: String = "Next",
+    nextText: String = stringResource(R.string.core_ui_next),
     cancelText: String? = null,
     onCancelButtonClicked: (() -> Unit)? = null,
     permissionsViewModel: PermissionsViewModel = koinViewModel(),
-    settingsText: String = "Open Settings",
+    settingsText: String = stringResource(R.string.core_ui_open_settings),
     contentAlignment: Alignment = Alignment.TopStart,
     onGrantedComposable: @Composable BoxScope.(grantedPermissions: List<String>) -> Unit,
 ) {
@@ -127,8 +135,8 @@ private fun PermissionsScreen(
     requiredTitle: String?,
     requiredSubtitle: String?,
     cancelText: String?,
-    nextText: String = "Next",
-    settingsText: String = "Open Settings",
+    nextText: String = stringResource(R.string.core_ui_next),
+    settingsText: String = stringResource(R.string.core_ui_open_settings),
     onCancelButtonClicked: (() -> Unit)?,
     openSettingsIntent: Intent?,
     permissionsMap: Map<String, Boolean>?,
@@ -330,7 +338,8 @@ private fun PermissionsScreen(
                     .padding(bottom = 32.dp),
             ) {
                 Button(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
+                        .testTag("permission:cancel"),
                     onClick = { onCancelButtonClicked?.invoke() },
                 ) {
                     Text(text = cancelText)
@@ -338,7 +347,8 @@ private fun PermissionsScreen(
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(
                     modifier = Modifier
-                        .weight(1f),
+                        .weight(1f)
+                        .testTag("permission:next"),
                     onClick = { onButtonClicked() },
                 ) {
                     Text(text = buttonText)

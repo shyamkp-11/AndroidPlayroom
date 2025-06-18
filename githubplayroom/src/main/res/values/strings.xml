@@ -1,21 +1,26 @@
 <resources>
     <string name="app_name">Github Playroom</string>
-    <string name="search">Search</string>
-    <string name="my_repositories">My Repositories</string>
-    <string name="feature_search_title">Search Repositories</string>
-    <string name="feature_search_clear_search_text_content_desc">Clear search string</string>
     <string name="back">Back</string>
-    <string name="search_repositories">Search repositories</string>
-    <string name="star_action">Star it</string>
-    <string name="repository_starred">Repository is starred</string>
-    <string name="undo">UNDO</string>
-    <string name="starred_repositories">Starred Repositories</string>
-    <string name="repository_unstarred">Repository is unstarred</string>
-    <string name="public_repo">Public</string>
-    <string name="private_repo">Private</string>
+    <string name="feature_search_clear_search_text_content_desc">Clear search string</string>
+    <string name="feature_search_title">Search Repositories</string>
     <string name="load_error">loading error</string>
+    <string name="login">Login</string>
+    <string name="my_repositories">My Repositories</string>
+    <string name="private_repo">Private</string>
+    <string name="public_repo">Public</string>
+    <string name="repository_starred">Repository is starred</string>
+    <string name="repository_unstarred">Repository is unstarred</string>
+    <string name="search">Search</string>
+    <string name="search_repositories">Search repositories</string>
+    <string name="sign_out">Sign out</string>
+    <string name="star_action">Star it</string>
+    <string name="starred_repositories">Starred Repositories</string>
+    <string name="undo">UNDO</string>
 
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="default_notification_channel_name" translatable="true">Github Star Channel</string>
     <string name="waiting_for_authentication">Waiting for authentication...</string>
+    <string name="starred">Starred</string>
+    <string name="notifications_on">Notifications On</string>
+    <string name="notifications_off">Notifications Off</string>
 </resources>
