@@ -25,12 +25,12 @@ android {
 dependencies {
 
     implementation(projects.core.data)
-    implementation(libs.androidx.compose.material3)
+    api(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.iconsExtended)
-    implementation(libs.androidx.core.ktx)
+    api(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(platform(libs.koin.bom))
-    implementation(libs.koin.android)
-    implementation(libs.koin.compose)
+    api(platform(libs.koin.bom))
+    api(libs.koin.android)
+    api(libs.koin.compose)
     api(libs.accompanist.permissions)
 }

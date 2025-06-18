@@ -52,7 +52,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -68,6 +70,7 @@ import com.shyampatel.core.common.RepoOwnerType
 import com.shyampatel.githubplayroom.BuildConfig
 import com.shyampatel.ui.AndroidPlayroomTopAppBar
 import com.shyampatel.githubplayroom.R
+import com.shyampatel.githubplayroom.TestingConstant
 import com.shyampatel.githubplayroom.screen.login.AuthenticationActivity
 import com.shyampatel.githubplayroom.screen.login.AuthenticationActivity.Companion.KEY_TOKEN
 import com.shyampatel.ui.theme.AndroidPlayroomTheme
@@ -204,8 +207,8 @@ fun HomeScreen(
                                 }, verticalAlignment = Alignment.CenterVertically
                         ) {
                             HomeScreenRow(
-                                modifier = Modifier,
-                                text = "Search Repositories",
+                                modifier = Modifier.testTag(TestingConstant.HOME_SCREEN_MENU_ITEM),
+                                text = stringResource(id = R.string.search_repositories),
                                 imageVector = Icons.Sharp.Search,
                                 contentDescription = "Search repositories",
                                 iconBackgroundColor = HomeIconTintColor,
@@ -217,8 +220,8 @@ fun HomeScreen(
                         AnimatedVisibility(visible = homeScreenState is HomeViewModel.HomeState.LoggedIn) {
                             Column {
                                 HomeScreenRow(
-                                    modifier = Modifier,
-                                    text = "My Repositories",
+                                    modifier = Modifier.testTag(TestingConstant.HOME_SCREEN_MENU_ITEM),
+                                    text = stringResource(R.string.my_repositories),
                                     imageVector = Icons.Filled.Code,
                                     contentDescription = "My Repositories",
                                     iconBackgroundColor = HomeIconTintColor,
@@ -227,8 +230,8 @@ fun HomeScreen(
                                     onMyRepositoriesClicked()
                                 }
                                 HomeScreenRow(
-                                    modifier = Modifier,
-                                    text = "Starred",
+                                    modifier = Modifier.testTag(TestingConstant.HOME_SCREEN_MENU_ITEM),
+                                    text = stringResource(R.string.starred),
                                     imageVector = Icons.Sharp.Star,
                                     contentDescription = "Starred Repositories",
                                     iconBackgroundColor = StarColor,
@@ -238,8 +241,10 @@ fun HomeScreen(
                                 }
                                 if (homeScreenState is HomeViewModel.HomeState.LoggedIn) {
                                     HomeScreenRow(
-                                        modifier = Modifier,
-                                        text = if (homeScreenState.notificationsEnabled) "Notifications On" else "Notifications Off",
+                                        modifier = Modifier.testTag(TestingConstant.HOME_SCREEN_MENU_ITEM),
+                                        text = if (homeScreenState.notificationsEnabled) stringResource(
+                                            R.string.notifications_on
+                                        ) else stringResource(R.string.notifications_off),
                                         imageVector = if (homeScreenState.notificationsEnabled) Icons.Default.NotificationsActive else Icons.Default.NotificationsOff,
                                         contentDescription = "Enable / Disable Notifications",
                                         iconBackgroundColor = if (homeScreenState.notificationsEnabled) SigninColor else SignoutColor,
@@ -253,8 +258,8 @@ fun HomeScreen(
                                     }
                                 }
                                 HomeScreenRow(
-                                    modifier = Modifier,
-                                    text = "Sign out",
+                                    modifier = Modifier.testTag(TestingConstant.HOME_SCREEN_MENU_ITEM),
+                                    text = stringResource(R.string.sign_out),
                                     imageVector = Icons.AutoMirrored.Filled.Logout,
                                     contentDescription = "Sign out",
                                     bottomSpacer = false,
@@ -272,8 +277,8 @@ fun HomeScreen(
                         }
                         AnimatedVisibility(visible = homeScreenState == HomeViewModel.HomeState.LoggedOut) {
                             HomeScreenRow(
-                                modifier = Modifier,
-                                text = "Login",
+                                modifier = Modifier.testTag(TestingConstant.HOME_SCREEN_MENU_ITEM),
+                                text = stringResource(R.string.login),
                                 imageVector = Icons.AutoMirrored.Filled.Login,
                                 contentDescription = "Login",
                                 bottomSpacer = false,

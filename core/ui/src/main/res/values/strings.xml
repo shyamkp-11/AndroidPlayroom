@@ -3,4 +3,6 @@
     <string name="core_ui_untitled">Untitled</string>
     <string name="core_ui_navigation_drawer_icon">Navigation drawer icon</string>
     <string name="core_ui_navigation_back_icon">back navigation icon</string>
+    <string name="core_ui_next">Next</string>
+    <string name="core_ui_open_settings">Open Settings</string>
 </resources>

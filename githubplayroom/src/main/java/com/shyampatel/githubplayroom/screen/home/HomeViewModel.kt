@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.zip
@@ -29,8 +30,8 @@ class HomeViewModel(
 
     private fun isUserAuthenticated(): Flow<HomeState> {
         return repository.getUserAccessToken()
-            .zip(repository.getAuthenticatedOwner()) { token, owner -> Pair(token, owner) }.
-            zip(repository.getNotificationEnabled()) { pair, notificationsEnabled -> Triple(pair.first, pair.second, notificationsEnabled) }
+            .combine(repository.getAuthenticatedOwner()) { token, owner -> Pair(token, owner) }.
+            combine(repository.getNotificationEnabled()) { pair, notificationsEnabled -> Triple(pair.first, pair.second, notificationsEnabled) }
                 .map {
             val token = it.first.getOrNull()
             val authenticatedOwner = it.second.getOrNull()
@@ -66,7 +67,7 @@ class HomeViewModel(
     }
 
     sealed interface HomeState {
-        class LoggedIn(val authenticatedOwner: RepoOwner, val notificationsEnabled: Boolean) : HomeState
+        data class LoggedIn(val authenticatedOwner: RepoOwner, val notificationsEnabled: Boolean) : HomeState
         data object LoggedOut : HomeState
         data object Error : HomeState
         data object Loading : HomeState

@@ -13,9 +13,6 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="All Tests">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="geofenceplayroom">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2024-10-30T06:06:21.046340Z">
@@ -41,7 +38,38 @@
       <SelectionState runConfigName="withbluetooth">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="ConnectDeviceScreen">
+      <SelectionState runConfigName="sampleTest()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="navigateToSearchScreen()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="login()">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-05-22T00:06:52.163762Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=2C261JEHN17502" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="starApp()">
+        <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-05-27T06:46:08.205030Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=2C261JEHN17502" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="genereteFirebaseAuthToken()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="AndroidStudioProjects.AndroidPlayroom.githubplayroom">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
