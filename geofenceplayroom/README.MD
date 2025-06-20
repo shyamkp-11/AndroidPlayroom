@@ -7,8 +7,9 @@ App showcases working with android libraries such as Jetpack Compose (views, the
 ## Screenshots
 | App Launch Flow                                                                                              | Create Geofence Flow                                                                                                        | Manage Geofence Flow                                                                                               |
 |--------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
-| <img src="docs/GeofencePlayroom%20app%20launch%20flow.gif" width="291" height="640" alt="App Launch image"/> | <img src="docs/GeofencePlayroom%20create%20geofence%20flow.gif" width="291" height="640" alt="Create geofence flow image"/> | <img src="docs/GeofencePlayroom%20manage%20fences.gif" width="291" height="640" alt="Manage geofence flow image"/> |
+| <img src="docs/GeofencePlayroom%20app%20launch%20flow.gif" width="230" height="512" alt="App Launch image"/> | <img src="docs/GeofencePlayroom%20create%20geofence%20flow.gif" width="230" height="512" alt="Create geofence flow image"/> | <img src="docs/GeofencePlayroom%20manage%20fences.gif" width="230" height="512" alt="Manage geofence flow image"/> |
 
+### Images
 |<img src="docs/Screenshot2.jpeg" width="230.4" height="512" alt="App screenshot2">    |<img src="docs/Screenshot1.jpeg" width="230.4" height="512" alt="App screenshot1">   |<img src="docs/Screenshot3.jpeg" width="230.4" height="512" alt="App screenshot3">|
 
 # Features

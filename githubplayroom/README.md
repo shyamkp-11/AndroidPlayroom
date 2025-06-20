@@ -9,9 +9,9 @@ Project also implements unit testing with junit, integration tests with compose 
 ## Screenshots
 | Login Flow                                                                                          | Push Notifications Flow                                                                                                  | Starring Repo Flow                                                                                           |
 |-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-| <img src="docs/GithubPlayroom%20login%20flow.gif" width="291" height="640" alt="Login Flow image"/> | <img src="docs/GithubPlayroom%20push%20notifications.gif" width="291" height="640" alt="Push notifications flow image"/> | <img src="docs/GithubPlayroom%20starring.gif" width="291" height="640" alt="Push notifications flow image"/> |
+| <img src="docs/GithubPlayroom%20login%20flow.gif" width="230" height="512" alt="Login Flow image"/> | <img src="docs/GithubPlayroom%20push%20notifications.gif" width="230" height="512" alt="Push notifications flow image"/> | <img src="docs/GithubPlayroom%20starring.gif" width="230" height="512" alt="Push notifications flow image"/> |
 
-[//]: # (![Login Flow]&#40;docs/GithubPlayroom%20login%20flow.gif "Login Flow"&#41;)
+### Images
 ![Screenshot showing Home screen, Search repos screen and Starred repos screen](docs/Screenshots.png "Screenshot showing Home screen, Search repos screen and Starred repos screen")
 
 # Features
@@ -73,18 +73,18 @@ Github rest/graphql API which prevents us to implement all the features the app 
 
 Make sure the [backend server](https://github.com/shyamkp-11/github-webhooks-server) for the app is running.
 1. Use follow curl code to generate the jwt token to access backend server from mobile app.
-``   
-        curl --location '<app_server_base_url>/api/v1/auth/registerGithubApiClient' \
-        --header 'Authorization: Bearer <admin_token> \
-        --data-raw '
-        {
-            "firstname": "<first_name>",
-            "lastname": "<last_name>",
-            "role":"USER",
-            "password": "<password>",
-            "email": "<email>"
-        }'
-``
+    ```cURL   
+    curl --location '<app_server_base_url>/api/v1/auth/registerGithubApiClient' \
+    --header 'Authorization: Bearer <admin_token> \
+    --data-raw '
+    {
+        "firstname": "<first_name>",
+        "lastname": "<last_name>",
+        "role":"USER",
+        "password": "<password>",
+        "email": "<email>"
+    }'
+    ```
     Update token in **secrets.properties**:
     >  APP_SERVER_TOKEN=(your backend app server base-url) 
 2. Update the backend server base url into **gradle.properties**.
