@@ -43,3 +43,5 @@ google-services.json
 
 .DS_Store
 .cxx
+/core/common/bin/
+/build-logic/convention/bin/
