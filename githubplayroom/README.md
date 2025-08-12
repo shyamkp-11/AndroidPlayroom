@@ -3,7 +3,7 @@ Github Playroom App
 Github Playroom is a sample app that primarily allows user to interact with Github using their Github Account.
 It allow users to **search** and **view** _private_ _public_ repositories. It also allow user to **star ⭐️** repositories. Along with that user can opt to receive push notifications when somebody stars their repository. 
 
-The app showcases working with latest android libraries such as Jetpack Compose (views, theming, animation, navigation), Koin, Kotlin coroutines, Jetpack Room, Firebase Messaging, ViewModels, Apollo Graphql, Retrofit build with clean architecture design.  
+The app showcases working with latest android libraries such as Jetpack Compose (views, theming, animation, navigation), Koin, Kotlin coroutines, Jetpack Room, Firebase Messaging, ViewModels, Chrome Custom Tabs to authenticate user with OAuth2, Apollo Graphql, Retrofit build with clean architecture design.  
 Project also implements unit testing with junit, integration tests with compose test, navigation component automated tests, and end-to-end test with UIAutomator. 
 
 ## Screenshots

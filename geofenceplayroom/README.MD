@@ -2,7 +2,7 @@ The Geofence App
 ==================
 The Geofence App is a sample app that allows user to _create geofence_ by pinning a location on map and adjusting the it's radius. User will get a _notification_ whenever the fence is entered or exited.   
 User can then view their created fences, deactivate, delete and reactivate. App also show the logs for geofence events (enter/exit) when user clicks on a saved geofence.   
-App showcases working with android libraries such as Jetpack Compose (views, theming, animation, navigation), Google Maps Compose Library, BroadcastReceivers, Koin, Coroutines and Jetpack Navigation. 
+App showcases working with android libraries such as Jetpack Compose (views, theming, animation, navigation), Google Maps Compose Library, BroadcastReceivers, Koin and kotlin Coroutines. 
 
 ## Screenshots
 | App Launch Flow                                                                                              | Create Geofence Flow                                                                                                        | Manage Geofence Flow                                                                                               |

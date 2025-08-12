@@ -37,6 +37,14 @@
       </SelectionState>
       <SelectionState runConfigName="withbluetooth">
         <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-08-11T22:40:54.855622Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=2C261JEHN17502" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="sampleTest()">
         <option name="selectionMode" value="DROPDOWN" />
