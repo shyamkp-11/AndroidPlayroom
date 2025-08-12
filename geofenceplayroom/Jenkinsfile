@@ -44,6 +44,7 @@ pipeline {
                 }
             }
             steps {
+                // TODO Fix this. Temporary sol.
                 withCredentials([file(credentialsId: 'githubapp_private_key', variable: 'secretFile')]) {
                     // do something with the file, for instance
                     sh '''
@@ -56,6 +57,11 @@ pipeline {
                     cp -f $googleServicesJson githubplayroom/google-services.json
                     '''
                 }
+                sh'''
+                cd githubplayroom
+                ./pkcs1_to_pkcs8.sh
+                cd ..
+'''
                 sh '''
                 cat >secrets.properties <<EOL
 CLIENT_ID_OAUTH_APP=$CLIENT_ID_OAUTH_APP
@@ -64,14 +70,10 @@ CLIENT_ID_GITHUBAPP=$CLIENT_ID_GITHUBAPP
 APP_SERVER_TOKEN=$APP_SERVER_TOKEN
 MAPS_API_KEY=$MAPS_API_KEY
 EOL
-
                 sed -i.bak "/APP_SERVER_BASE_URL=/ s/=.*/=$APP_SERVER_BASE_URL/" gradle.properties && rm gradle.properties.bak
                 sed -i.bak "/APP_NAME_GITHUBAPP=/ s/=.*/=$APP_NAME_GITHUBAPP/" gradle.properties && rm gradle.properties.bak
-                cd githubplayroom
-                ./pkcs1_to_pkcs8.sh
-                cd ..
                 gradle -v
-                gradle :githubplayroom:assembleDebug
+                gradle :geofenceplayroom:assembleDebug
                 '''
             }
         }
@@ -111,7 +113,7 @@ if gh release view "${tagName}" &>/dev/null; then
 else
     # Create the release if it does not exist
     echo "Creating release ${tagName}..."
-    gh release create ${tagName} githubplayroom/build/outputs/apk/debug/githubplayroom-debug.apk
+    gh release create ${tagName} geofenceplayroom/build/outputs/apk/debug/geofenceplayroom-debug.apk
 fi
 """
             }
