@@ -1,0 +1,141 @@
+pipeline {
+    agent any
+    environment {
+        ANDROID_CREDENTIALS = credentials('AndroidProject-secrets')
+
+        // goes into gradle.properties
+        APP_SERVER_BASE_URL = credentials('APP_SERVER_BASE_URL')
+        APP_NAME_GITHUBAPP = credentials('APP_NAME_GITHUBAPP')
+
+        GRADLE_USER_HOME = "$WORKSPACE/.gradle"
+    }
+
+    stages {
+        //stage('Clear Ws') {
+        //    steps {
+        //        cleanWs()
+        //    }
+        //}
+        stage ('Init') {
+            steps {
+                script {
+                    def props = readProperties file: env.ANDROID_CREDENTIALS
+                    env.APP_SERVER_TOKEN = props.APP_SERVER_TOKEN
+                    env.CLIENT_ID_GITHUBAPP = props.CLIENT_ID_GITHUBAPP
+                    env.CLIENT_ID_OAUTH_APP = props.CLIENT_ID_OAUTH_APP
+                    env.CLIENT_SECRET_OAUTH_APP = props.CLIENT_SECRET_OAUTH_APP
+                    env.GITHUB_TOKEN = props.GITHUB_PAT
+                    env.MAPS_API_KEY = props.MAPS_API_KEY
+                }
+            }
+        }
+        stage('Docker') {
+            steps {
+                sh '''
+                    docker build --tag shyamkp4/androidplayroom .
+                '''
+            }
+        }
+        stage('Build') {
+            agent {
+                docker {
+                    image 'shyamkp4/androidplayroom'
+                    reuseNode true
+                }
+            }
+            steps {
+                // TODO Fix this. Temporary sol.
+                withCredentials([file(credentialsId: 'githubapp_private_key', variable: 'secretFile')]) {
+                    // do something with the file, for instance
+                    sh '''
+                    cp -f $secretFile githubplayroom/githubplayroom_private_key.pem
+                    '''
+                }
+                withCredentials([file(credentialsId: 'google_services_json', variable: 'googleServicesJson')]) {
+                    // do something with the file, for instance
+                    sh '''
+                    cp -f $googleServicesJson githubplayroom/google-services.json
+                    '''
+                }
+                sh'''
+                cd githubplayroom
+                ./pkcs1_to_pkcs8.sh
+                cd ..
+'''
+                sh '''
+                cat >secrets.properties <<EOL
+CLIENT_ID_OAUTH_APP=$CLIENT_ID_OAUTH_APP
+CLIENT_SECRET_OAUTH_APP=$CLIENT_SECRET_OAUTH_APP
+CLIENT_ID_GITHUBAPP=$CLIENT_ID_GITHUBAPP
+APP_SERVER_TOKEN=$APP_SERVER_TOKEN
+MAPS_API_KEY=$MAPS_API_KEY
+EOL
+                sed -i.bak "/APP_SERVER_BASE_URL=/ s/=.*/=$APP_SERVER_BASE_URL/" gradle.properties && rm gradle.properties.bak
+                sed -i.bak "/APP_NAME_GITHUBAPP=/ s/=.*/=$APP_NAME_GITHUBAPP/" gradle.properties && rm gradle.properties.bak
+                gradle -v
+                gradle :withbluetooth:assembleDebug
+                '''
+            }
+        }
+        stage('Upload Github release') {
+            agent {
+                dockerfile {
+                    dir 'docker'
+                    //args '-e GITHUB_TOKEN=${env.GITHUB_TOKEN}'
+                    reuseNode true
+                }
+            }
+        when {
+            beforeAgent true;
+            expression {
+                def scriptOutput = sh(returnStdout: true, script: '''
+                    #!/bin/bash
+                    commit1=$(git rev-list -1 $(git describe --tags --abbrev=0));
+                    commit2=$(git rev-parse HEAD);
+                    if [ "$commit1" = "$commit2" ]; then
+                        echo "true"
+                    else
+                        echo "false"
+                    fi''').trim()
+                echo "$scriptOutput"
+                return scriptOutput == "true"
+            }
+        }
+        steps {
+            script {
+                def tagName = sh(returnStdout: true, script:'git describe --tags --abbrev=0').trim()
+                def commitish = sh(returnStdout: true, script:'git rev-parse HEAD').trim()
+                sh """
+#echo $GITHUB_TOKEN
+# Check if the release already exists
+if gh release view "${tagName}" &>/dev/null; then
+    echo "Release ${tagName} already exists. Skipping creation."
+else
+    # Create the release if it does not exist
+    echo "Creating release ${tagName}..."
+    gh release create ${tagName} withbluetooth/build/outputs/apk/debug/withbluetooth-debug.apk
+fi
+"""
+            }
+        }
+    }
+        stage('Test') {
+            steps {
+                sh '''
+                echo Testing
+                '''
+                // sh 'test -f .apk'
+            }
+        }
+    }
+    post {
+        success {
+            sh '''
+                echo post on Success
+                '''
+            // archiveArtifacts artifacts: 'build/**'
+        }
+        // always {
+        // }
+    }
+}
