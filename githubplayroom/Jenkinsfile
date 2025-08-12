@@ -1,13 +1,12 @@
 pipeline {
     agent any
     environment {
-        APP_SERVER_TOKEN = credentials('APP_SERVER_TOKEN')
-        CLIENT_ID_GITHUBAPP = credentials('CLIENT_ID_GITHUBAPP')
-        CLIENT_ID_OAUTH_APP = credentials('CLIENT_ID_OAUTH_APP')
-        CLIENT_SECRET_OAUTH_APP = credentials('CLIENT_SECRET_OAUTH_APP')
+        ANDROID_CREDENTIALS = credentials('AndroidProject-secrets')
+
         // goes into gradle.properties
-        APP_SERVER_BASE_URL = 'base_url'
-        APP_NAME_GITHUBAPP = 'star-notifications-app'
+        APP_SERVER_BASE_URL = credentials('APP_SERVER_BASE_URL')
+        APP_NAME_GITHUBAPP = credentials('APP_NAME_GITHUBAPP')
+
         GRADLE_USER_HOME = "$WORKSPACE/.gradle"
     }
 
@@ -17,6 +16,18 @@ pipeline {
         //        cleanWs()
         //    }
         //}
+        stage ('Init') {
+            steps {
+                script {
+                    def props = readProperties file: env.ANDROID_CREDENTIALS
+                    env.APP_SERVER_TOKEN = props.APP_SERVER_TOKEN
+                    env.CLIENT_ID_GITHUBAPP = props.CLIENT_ID_GITHUBAPP
+                    env.CLIENT_ID_OAUTH_APP = props.CLIENT_ID_OAUTH_APP
+                    env.CLIENT_SECRET_OAUTH_APP = props.CLIENT_SECRET_OAUTH_APP
+                    env.GITHUB_TOKEN = props.GITHUB_PAT
+                }
+            }
+        }
         stage('Docker') {
             steps {
                 sh '''
@@ -51,6 +62,7 @@ CLIENT_SECRET_OAUTH_APP=$CLIENT_SECRET_OAUTH_APP
 CLIENT_ID_GITHUBAPP=$CLIENT_ID_GITHUBAPP
 APP_SERVER_TOKEN=$APP_SERVER_TOKEN
 EOL
+
                 sed -i.bak "/APP_SERVER_BASE_URL=/ s/=.*/=$APP_SERVER_BASE_URL/" gradle.properties && rm gradle.properties.bak
                 sed -i.bak "/APP_NAME_GITHUBAPP=/ s/=.*/=$APP_NAME_GITHUBAPP/" gradle.properties && rm gradle.properties.bak
                 cd githubplayroom
@@ -61,6 +73,48 @@ EOL
                 '''
             }
         }
+        stage('Upload Github release') {
+            agent {
+                dockerfile {
+                    dir 'docker'
+                    //args '-e GITHUB_TOKEN=${env.GITHUB_TOKEN}'
+                    reuseNode true
+                }
+            }
+        when {
+            beforeAgent true;
+            expression {
+                def scriptOutput = sh(returnStdout: true, script: '''
+                    #!/bin/bash
+                    commit1=$(git rev-list -1 $(git describe --tags --abbrev=0));
+                    commit2=$(git rev-parse HEAD);
+                    if [ "$commit1" = "$commit2" ]; then
+                        echo "true"
+                    else
+                        echo "false"
+                    fi''').trim()
+                echo "$scriptOutput"
+                return scriptOutput == "true"
+            }
+        }
+        steps {
+            script {
+                def tagName = sh(returnStdout: true, script:'git describe --tags --abbrev=0').trim()
+                def commitish = sh(returnStdout: true, script:'git rev-parse HEAD').trim()
+                sh """
+#echo $GITHUB_TOKEN
+# Check if the release already exists
+if gh release view "${tagName}" &>/dev/null; then
+    echo "Release ${tagName} already exists. Skipping creation."
+else
+    # Create the release if it does not exist
+    echo "Creating release ${tagName}..."
+    gh release create ${tagName} githubplayroom/build/outputs/apk/debug/githubplayroom-debug.apk
+fi
+"""
+            }
+        }
+    }
         stage('Test') {
             steps {
                 sh '''
