@@ -88,7 +88,7 @@ EOL
             expression {
                 def scriptOutput = sh(returnStdout: true, script: '''
                     #!/bin/bash
-                    commit1=$(git rev-list -1 $(git describe --tags --abbrev=0));
+                    commit1=$(git describe --tags --abbrev=0);
                     commit2=$(git rev-parse HEAD);
                     if [ "$commit1" = "$commit2" ]; then
                         echo "true"
