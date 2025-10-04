@@ -32,6 +32,7 @@ pipeline {
         stage('Docker') {
             steps {
                 sh '''
+                    docker build --tag shyamkp4/upload-github-release -f docker/Dockerfile .
                     docker build --tag shyamkp4/androidplayroom .
                 '''
             }
@@ -77,8 +78,8 @@ EOL
         }
         stage('Upload Github release') {
             agent {
-                dockerfile {
-                    dir 'docker'
+                docker {
+                    image 'shyamkp4/upload-github-release'
                     //args '-e GITHUB_TOKEN=${env.GITHUB_TOKEN}'
                     reuseNode true
                 }
@@ -88,7 +89,7 @@ EOL
             expression {
                 def scriptOutput = sh(returnStdout: true, script: '''
                     #!/bin/bash
-                    commit1=$(git describe --tags --abbrev=0);
+                    commit1=$(git rev-list -1 $(git describe --tags --abbrev=0));
                     commit2=$(git rev-parse HEAD);
                     if [ "$commit1" = "$commit2" ]; then
                         echo "true"

@@ -26,7 +26,7 @@
       </SelectionState>
       <SelectionState runConfigName="githubplayroom">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-08-12T04:38:14.055659Z">
+        <DropdownSelection timestamp="2025-10-03T08:52:38.573110Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=2C261JEHN17502" />
